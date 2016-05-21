@@ -9,5 +9,17 @@ go:
   - 1.6
   - tip
 
+before_install:
+  - go get golang.org/x/tools/cmd/cover
+
+matrix:
+  allow_failures:
+    - go: tip
+
+script:
+  - go test -coverprofile=coverage.txt -covermode=atomic
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+sudo: false
