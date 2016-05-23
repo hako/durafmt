@@ -2,6 +2,7 @@
 package durafmt
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +19,16 @@ type Durafmt struct {
 }
 
 // Parse creates a new *Durafmt struct, returns error if input is invalid.
-func Parse(input string) (*Durafmt, error) {
+func Parse(dinput time.Duration) *Durafmt {
+	input := dinput.String()
+	return &Durafmt{dinput, input}
+}
+
+// ParseString creates a new *Durafmt struct from a string, returns error if input is invalid.
+func ParseString(input string) (*Durafmt, error) {
+	if input == "0" || input == "-0" {
+		return &Durafmt{}, errors.New("durafmt: missing unit in duration " + input)
+	}
 	duration, err := time.ParseDuration(input)
 	if err != nil {
 		return &Durafmt{}, err
@@ -29,6 +39,12 @@ func Parse(input string) (*Durafmt, error) {
 // String parses d *Durafmt into a human readable duration.
 func (d *Durafmt) String() string {
 	var duration string
+
+	// Check for minus durations.
+	if string(d.input[0]) == "-" {
+		duration += "-"
+		d.duration = -d.duration
+	}
 
 	// Convert duration.
 	seconds := int(d.duration.Seconds()) % 60
@@ -67,7 +83,7 @@ func (d *Durafmt) String() string {
 			if k == "months" {
 				continue
 			}
-			// check for suffix in input string and add the key
+			// check for suffix in input string and add the key.
 			if strings.HasSuffix(d.input, string(k[0])) {
 				duration += strval + " " + k
 			}

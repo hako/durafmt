@@ -26,6 +26,8 @@ The above seems very easy to read, unless your duration looks like this:
 
 # Usage
 
+### durafmt.ParseString()
+
 ```go
 package main
 
@@ -35,13 +37,30 @@ import (
 )
 
 func main() {
-	duration, err := durafmt.Parse("354h22m3.24s")
+	duration, err := durafmt.ParseString("354h22m3.24s")
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(duration) // 2 weeks 18 hours 22 minutes 3 seconds
 	// duration.String() // String representation. "2 weeks 18 hours 22 minutes 3 seconds"
+}
+```
 
+### durafmt.Parse()
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+	"github.com/hako/durafmt"
+)
+
+func main() {
+	timeduration := (354 * time.Hour) + (22 * time.Minute) + (3 * time.Second)
+	duration := durafmt.Parse(timeduration).String()
+	fmt.Println(duration) // 2 weeks 18 hours 22 minutes 3 seconds
 }
 ```
 
