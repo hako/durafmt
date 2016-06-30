@@ -27,11 +27,11 @@ func Parse(dinput time.Duration) *Durafmt {
 // ParseString creates a new *Durafmt struct from a string, returns error if input is invalid.
 func ParseString(input string) (*Durafmt, error) {
 	if input == "0" || input == "-0" {
-		return &Durafmt{}, errors.New("durafmt: missing unit in duration " + input)
+		return nil, errors.New("durafmt: missing unit in duration " + input)
 	}
 	duration, err := time.ParseDuration(input)
 	if err != nil {
-		return &Durafmt{}, err
+		return nil, err
 	}
 	return &Durafmt{duration, input}, nil
 }
