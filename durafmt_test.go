@@ -42,7 +42,7 @@ func TestParse(t *testing.T) {
 	for _, table := range testTimes {
 		result := Parse(table.test).String()
 		if result != table.expected {
-			t.Errorf("Parse(%q).String() == %q. got %q, expected %q", table.test, result, result, table.expected)
+			t.Errorf("Parse(%q).String() = %q. got %q, expected %q", table.test, result, result, table.expected)
 		}
 	}
 }
@@ -102,7 +102,7 @@ func TestParseString(t *testing.T) {
 		}
 		result := d.String()
 		if result != table.expected {
-			t.Errorf("d.String() == %q. got %q, expected %q", table.test, result, table.expected)
+			t.Errorf("d.String() = %q. got %q, expected %q", table.test, result, table.expected)
 		}
 	}
 }

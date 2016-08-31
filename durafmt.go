@@ -77,8 +77,8 @@ func (d *Durafmt) String() string {
 		// remove the plural 's', if v is 1.
 		case v == 1:
 			duration += strval + " " + strings.TrimRight(k, "s") + " "
-		// omit any value with 0.
-		case d.duration.String() == "0":
+		// omit any value with 0s or 0.
+		case d.duration.String() == "0" || d.duration.String() == "0s":
 			// disallow months.
 			if k == "months" {
 				continue
