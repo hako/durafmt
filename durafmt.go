@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	units = []string{"years", "months", "weeks", "days", "hours", "minutes", "seconds"}
+	units = []string{"years", "weeks", "days", "hours", "minutes", "seconds"}
 )
 
 // Durafmt holds the parsed duration and the original input duration.
@@ -24,7 +24,8 @@ func Parse(dinput time.Duration) *Durafmt {
 	return &Durafmt{dinput, input}
 }
 
-// ParseString creates a new *Durafmt struct from a string, returns error if input is invalid.
+// ParseString creates a new *Durafmt struct from a string.
+// returns an error if input is invalid.
 func ParseString(input string) (*Durafmt, error) {
 	if input == "0" || input == "-0" {
 		return nil, errors.New("durafmt: missing unit in duration " + input)
@@ -49,43 +50,37 @@ func (d *Durafmt) String() string {
 	// Convert duration.
 	seconds := int(d.duration.Seconds()) % 60
 	minutes := int(d.duration.Minutes()) % 60
-	hours := int(d.duration.Hours())
-	days := (hours / 24)
-	weeks := (days / 7)
-	months := (weeks / 4)
-	years := (months / 12)
+	hours := int(d.duration.Hours()) % 24
+	days := int(d.duration/(24*time.Hour)) % 365 % 7
+	weeks := int(d.duration/(24*time.Hour)) / 7 % 52
+	years := int(d.duration/(24*time.Hour)) / 365
 
 	// Create a map of the converted duration time.
-	convMap := map[string]int{
+	durationMap := map[string]int{
 		"seconds": seconds,
 		"minutes": minutes,
-		"hours":   hours % 24,
-		"days":    days % 7,
-		"weeks":   weeks % 4,
-		"months":  months % 12,
+		"hours":   hours,
+		"days":    days,
+		"weeks":   weeks,
 		"years":   years,
 	}
 
 	// Construct duration string.
-	for _, k := range units {
-		v := convMap[k]
+	for _, u := range units {
+		v := durationMap[u]
 		strval := strconv.Itoa(v)
 		switch {
 		// add to the duration string if v > 1.
 		case v > 1:
-			duration += strval + " " + k + " "
+			duration += strval + " " + u + " "
 		// remove the plural 's', if v is 1.
 		case v == 1:
-			duration += strval + " " + strings.TrimRight(k, "s") + " "
+			duration += strval + " " + strings.TrimRight(u, "s") + " "
 		// omit any value with 0s or 0.
 		case d.duration.String() == "0" || d.duration.String() == "0s":
-			// disallow months.
-			if k == "months" {
-				continue
-			}
 			// check for suffix in input string and add the key.
-			if strings.HasSuffix(d.input, string(k[0])) {
-				duration += strval + " " + k
+			if strings.HasSuffix(d.input, string(u[0])) {
+				duration += strval + " " + u
 			}
 			break
 		// omit any value with 0.

@@ -33,8 +33,9 @@ func TestParse(t *testing.T) {
 		{48 * time.Hour, "2 days"},
 		{120 * time.Hour, "5 days"},
 		{168 * time.Hour, "1 week"},
-		{672 * time.Hour, "1 month"},
-		{8064 * time.Hour, "1 year"},
+		{672 * time.Hour, "4 weeks"},
+		{8760 * time.Hour, "1 year"},
+		{17520 * time.Hour, "2 years"},
 		{-1 * time.Second, "-1 second"},
 		{-10 * time.Second, "-10 seconds"},
 	}
@@ -42,7 +43,8 @@ func TestParse(t *testing.T) {
 	for _, table := range testTimes {
 		result := Parse(table.test).String()
 		if result != table.expected {
-			t.Errorf("Parse(%q).String() = %q. got %q, expected %q", table.test, result, result, table.expected)
+			t.Errorf("Parse(%q).String() = %q. got %q, expected %q",
+				table.test, result, result, table.expected)
 		}
 	}
 }
@@ -62,8 +64,9 @@ func TestParseString(t *testing.T) {
 		{"48h", "2 days"},
 		{"120h", "5 days"},
 		{"168h", "1 week"},
-		{"672h", "1 month"},
-		{"8064h", "1 year"},
+		{"672h", "4 weeks"},
+		{"8760h", "1 year"},
+		{"17520h", "2 years"},
 		{"1m0s", "1 minute"},
 		{"1m2s", "1 minute 2 seconds"},
 		{"3h4m5s", "3 hours 4 minutes 5 seconds"},
@@ -83,8 +86,8 @@ func TestParseString(t *testing.T) {
 		{"-48h", "-2 days"},
 		{"-120h", "-5 days"},
 		{"-168h", "-1 week"},
-		{"-672h", "-1 month"},
-		{"-8064h", "-1 year"},
+		{"-672h", "-4 weeks"},
+		{"-8760h", "-1 year"},
 		{"-1m0s", "-1 minute"},
 		{"-0m2s", "-2 seconds"},
 		{"-0m2m", "-2 minutes"},
@@ -102,7 +105,8 @@ func TestParseString(t *testing.T) {
 		}
 		result := d.String()
 		if result != table.expected {
-			t.Errorf("d.String() = %q. got %q, expected %q", table.test, result, table.expected)
+			t.Errorf("d.String() = %q. got %q, expected %q",
+				table.test, result, table.expected)
 		}
 	}
 }
@@ -116,7 +120,7 @@ func TestInvalidDuration(t *testing.T) {
 		{"1", ""},
 		{"1d", ""},
 		{"1w", ""},
-		{"1mth", ""},
+		{"1wk", ""},
 		{"1y", ""},
 		{"", ""},
 		{"m1", ""},
@@ -128,7 +132,8 @@ func TestInvalidDuration(t *testing.T) {
 	for _, table := range testStrings {
 		_, err := ParseString(table.test)
 		if err == nil {
-			t.Errorf("NewDurable(%q). got %q, expected %q", table.test, err, table.expected)
+			t.Errorf("NewDurable(%q). got %q, expected %q",
+				table.test, err, table.expected)
 		}
 	}
 }
