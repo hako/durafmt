@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 )
-//added Milliseconds
+
 var (
-	units = []string{"years", "weeks", "days", "hours", "minutes", "seconds","milliseconds"}
+	units = []string{"years", "weeks", "days", "hours", "minutes", "seconds", "milliseconds"}
 )
 
 // Durafmt holds the parsed duration and the original input duration.
@@ -54,17 +54,19 @@ func (d *Durafmt) String() string {
 	days := int(d.duration/(24*time.Hour)) % 365 % 7
 	weeks := int(d.duration/(24*time.Hour)) / 7 % 52
 	years := int(d.duration/(24*time.Hour)) / 365
-	//specifing remaining time as millisecond
-    milliseconds:=int(d.duration/time.Millisecond)-(seconds*1000)-(minutes*60000) -(hours*3600000)-(days*86400000)-(weeks*604800000)-(years*31536000000)
+	milliseconds := int(d.duration/time.Millisecond) -
+		(seconds * 1000) - (minutes * 60000) - (hours * 3600000) -
+		(days * 86400000) - (weeks * 604800000) - (years * 31536000000)
+
 	// Create a map of the converted duration time.
 	durationMap := map[string]int{
 		"milliseconds": milliseconds,
-		"seconds": seconds,
-		"minutes": minutes,
-		"hours":   hours,
-		"days":    days,
-		"weeks":   weeks,
-		"years":   years,
+		"seconds":      seconds,
+		"minutes":      minutes,
+		"hours":        hours,
+		"days":         days,
+		"weeks":        weeks,
+		"years":        years,
 	}
 
 	// Construct duration string.
@@ -80,9 +82,23 @@ func (d *Durafmt) String() string {
 			duration += strval + " " + strings.TrimRight(u, "s") + " "
 		// omit any value with 0s or 0.
 		case d.duration.String() == "0" || d.duration.String() == "0s":
-			// check for suffix in input string and add the key.
-			if strings.HasSuffix(d.input, string(u[0])) {
+			// note: milliseconds and minutes have the same suffix (m)
+			// so we have to check if the units match with the suffix.
+
+			// check for a suffix that is NOT the milliseconds suffix.
+			if strings.HasSuffix(d.input, string(u[0])) && !strings.Contains(d.input, "ms") {
+				// if it happens that the units are milliseconds, skip.
+				if u == "milliseconds" {
+					continue
+				}
 				duration += strval + " " + u
+			}
+			// process milliseconds here.
+			if u == "milliseconds" {
+				if strings.Contains(d.input, "ms") {
+					duration += strval + " " + u
+					break
+				}
 			}
 			break
 		// omit any value with 0.
