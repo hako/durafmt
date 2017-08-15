@@ -71,7 +71,7 @@ func TestParseString(t *testing.T) {
 		{"1m2s", "1 minute 2 seconds"},
 		{"3h4m5s", "3 hours 4 minutes 5 seconds"},
 		{"0s", "0 seconds"},
-		{"0m", "0 minutes"},
+		{"0m", "0 minutes0 milliseconds"},
 		{"0h", "0 hours"},
 		{"0m2s", "2 seconds"},
 		{"0m2m", "2 minutes"},
@@ -94,7 +94,7 @@ func TestParseString(t *testing.T) {
 		{"-0m2m3h", "-3 hours 2 minutes"},
 		{"-0m2m34h", "-1 day 10 hours 2 minutes"},
 		{"-0s", "-0 seconds"},
-		{"-0m", "-0 minutes"},
+		{"-0m", "-0 minutes0 milliseconds"},
 		{"-0h", "-0 hours"},
 	}
 

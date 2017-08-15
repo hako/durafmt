@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 )
-
+//added Milliseconds
 var (
-	units = []string{"years", "weeks", "days", "hours", "minutes", "seconds"}
+	units = []string{"years", "weeks", "days", "hours", "minutes", "seconds","milliseconds"}
 )
 
 // Durafmt holds the parsed duration and the original input duration.
@@ -54,9 +54,11 @@ func (d *Durafmt) String() string {
 	days := int(d.duration/(24*time.Hour)) % 365 % 7
 	weeks := int(d.duration/(24*time.Hour)) / 7 % 52
 	years := int(d.duration/(24*time.Hour)) / 365
-
+	//specifing remaining time as millisecond
+    milliseconds:=int(d.duration/time.Millisecond)-(seconds*1000)-(minutes*60000) -(hours*3600000)-(days*86400000)-(weeks*604800000)-(years*31536000000)
 	// Create a map of the converted duration time.
 	durationMap := map[string]int{
+		"milliseconds": milliseconds,
 		"seconds": seconds,
 		"minutes": minutes,
 		"hours":   hours,
