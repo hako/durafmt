@@ -155,7 +155,7 @@ func TestInvalidDuration(t *testing.T) {
 	for _, table := range testStrings {
 		_, err := ParseString(table.test)
 		if err == nil {
-			t.Errorf("NewDurable(%q). got %q, expected %q",
+			t.Errorf("ParseString(%q). got %q, expected %q",
 				table.test, err, table.expected)
 		}
 	}
