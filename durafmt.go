@@ -48,18 +48,18 @@ func (d *Durafmt) String() string {
 	}
 
 	// Convert duration.
-	seconds := int(d.duration.Seconds()) % 60
-	minutes := int(d.duration.Minutes()) % 60
-	hours := int(d.duration.Hours()) % 24
-	days := int(d.duration/(24*time.Hour)) % 365 % 7
-	weeks := int(d.duration/(24*time.Hour)) / 7 % 52
-	years := int(d.duration/(24*time.Hour)) / 365
-	milliseconds := int(d.duration/time.Millisecond) -
+	seconds := int64(d.duration.Seconds()) % 60
+	minutes := int64(d.duration.Minutes()) % 60
+	hours := int64(d.duration.Hours()) % 24
+	days := int64(d.duration/(24*time.Hour)) % 365 % 7
+	weeks := int64(d.duration/(24*time.Hour)) / 7 % 52
+	years := int64(d.duration/(24*time.Hour)) / 365
+	milliseconds := int64(d.duration/time.Millisecond) -
 		(seconds * 1000) - (minutes * 60000) - (hours * 3600000) -
 		(days * 86400000) - (weeks * 604800000) - (years * 31536000000)
 
 	// Create a map of the converted duration time.
-	durationMap := map[string]int{
+	durationMap := map[string]int64{
 		"milliseconds": milliseconds,
 		"seconds":      seconds,
 		"minutes":      minutes,
@@ -72,7 +72,7 @@ func (d *Durafmt) String() string {
 	// Construct duration string.
 	for _, u := range units {
 		v := durationMap[u]
-		strval := strconv.Itoa(v)
+		strval := strconv.FormatInt(v, 10)
 		switch {
 		// add to the duration string if v > 1.
 		case v > 1:
