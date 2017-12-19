@@ -54,9 +54,9 @@ func (d *Durafmt) String() string {
 	days := int64(d.duration/(24*time.Hour)) % 365 % 7
 	weeks := int64(d.duration/(24*time.Hour)) / 7 % 52
 
-	// edge case between 364 and 365 days
-	total_days := int64(d.duration/(24*time.Hour))
-        if total_days >= 364 && total_days < 365 {
+	// Edge case between 364 and 365 days.
+	totalDays := int64(d.duration / (24 * time.Hour))
+	if totalDays >= 364 && totalDays < 365 {
 		weeks = 52
 	}
 
