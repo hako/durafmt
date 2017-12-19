@@ -60,7 +60,7 @@ func (d *Durafmt) String() string {
 	if leftYearDays >= 364 && leftYearDays < 365 {
 		weeks = 52
 	}
-  
+
 	years := int64(d.duration/(24*time.Hour)) / 365
 	milliseconds := int64(d.duration/time.Millisecond) -
 		(seconds * 1000) - (minutes * 60000) - (hours * 3600000) -
