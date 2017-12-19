@@ -52,11 +52,12 @@ func (d *Durafmt) String() string {
 	minutes := int64(d.duration.Minutes()) % 60
 	hours := int64(d.duration.Hours()) % 24
 	days := int64(d.duration/(24*time.Hour)) % 365 % 7
-	weeks := int64(d.duration/(24*time.Hour)) / 7 % 52
 
 	// edge case between 364 and 365 days
-	total_days := int64(d.duration/(24*time.Hour))
-        if total_days >= 364 && total_days < 365 {
+	left_year_days := int64(d.duration/(24*time.Hour)) % 365
+        // we  need to calculate weeks from what is left from years
+	weeks := left_year_days / 7
+        if left_year_days >= 364 && left_year_days < 365 {
 		weeks = 52
 	}
 
