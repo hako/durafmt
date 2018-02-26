@@ -1,6 +1,7 @@
 # durafmt
 
 [![Build Status](https://travis-ci.org/hako/durafmt.svg?branch=master)](https://travis-ci.org/hako/durafmt) [![Go Report Card](https://goreportcard.com/badge/github.com/hako/durafmt)](https://goreportcard.com/report/github.com/hako/durafmt) [![codecov](https://codecov.io/gh/hako/durafmt/branch/master/graph/badge.svg)](https://codecov.io/gh/hako/durafmt) [![GoDoc](https://godoc.org/github.com/hako/durafmt?status.svg)](https://godoc.org/github.com/hako/durafmt) 
+[![Open Source Helpers](https://www.codetriage.com/hako/durafmt/badges/users.svg)](https://www.codetriage.com/hako/durafmt)
 
 
 
