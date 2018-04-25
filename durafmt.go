@@ -140,10 +140,7 @@ func (d *Durafmt) String() string {
 	// if more than 2 spaces present return the first 2 strings
 	// if short version is requested
 	if d.short {
-		durationArray := strings.Split(duration, " ")
-		if len(durationArray) > 2 {
-			duration = strings.Join(durationArray[:2], " ")
-		}
+		duration = strings.Join(strings.Split(duration, " ")[:2], " ")
 	}
 
 	return duration
