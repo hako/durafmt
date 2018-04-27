@@ -301,4 +301,12 @@ func TestInvalidDuration(t *testing.T) {
 				table.test, err, table.expected)
 		}
 	}
+
+	for _, table := range testStrings {
+		_, err := ParseStringShort(table.test)
+		if err == nil {
+			t.Errorf("ParseString(%q). got %q, expected %q",
+				table.test, err, table.expected)
+		}
+	}
 }
