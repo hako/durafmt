@@ -192,7 +192,7 @@ func TestParseString(t *testing.T) {
 	}
 }
 
-// TestParseString for durafmt duration string conversion.
+// TestParseStringShort for durafmt duration string conversion, short version.
 func TestParseStringShort(t *testing.T) {
 	testStrings = []struct {
 		test     string
