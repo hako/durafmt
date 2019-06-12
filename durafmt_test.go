@@ -1,6 +1,7 @@
 package durafmt
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -308,5 +309,25 @@ func TestInvalidDuration(t *testing.T) {
 			t.Errorf("ParseString(%q). got %q, expected %q",
 				table.test, err, table.expected)
 		}
+	}
+}
+
+// Benchmarks
+
+func BenchmarkParse(b *testing.B) {
+	for n := 1; n < b.N; n++ {
+		Parse(time.Duration(n) * time.Hour)
+	}
+}
+
+func BenchmarkParseStringShort(b *testing.B) {
+	for n := 1; n < b.N; n++ {
+		ParseStringShort(fmt.Sprintf("%dh", n))
+	}
+}
+
+func BenchmarkParseString(b *testing.B) {
+	for n := 1; n < b.N; n++ {
+		ParseString(fmt.Sprintf("%dh", n))
 	}
 }
