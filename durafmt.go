@@ -16,19 +16,26 @@ var (
 type Durafmt struct {
 	duration time.Duration
 	input    string // Used as reference.
-	short    bool
+	limitN   int    // Non-zero to limit only first N elements to output.
+}
+
+// LimitFirstN sets the output format, outputing only first N elements. n == 0 means no limit.
+func (d *Durafmt) LimitFirstN(n int) *Durafmt {
+	d.limitN = n
+	return d
 }
 
 // Parse creates a new *Durafmt struct, returns error if input is invalid.
 func Parse(dinput time.Duration) *Durafmt {
 	input := dinput.String()
-	return &Durafmt{dinput, input, false}
+	return &Durafmt{dinput, input, 0}
 }
 
 // ParseShort creates a new *Durafmt struct, short form, returns error if input is invalid.
+// It's shortcut for `Parse(dur).LimitFirstN(1)`
 func ParseShort(dinput time.Duration) *Durafmt {
 	input := dinput.String()
-	return &Durafmt{dinput, input, true}
+	return &Durafmt{dinput, input, 1}
 }
 
 // ParseString creates a new *Durafmt struct from a string.
@@ -41,11 +48,12 @@ func ParseString(input string) (*Durafmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Durafmt{duration, input, false}, nil
+	return &Durafmt{duration, input, 0}, nil
 }
 
 // ParseStringShort creates a new *Durafmt struct from a string, short form
 // returns an error if input is invalid.
+// It's shortcut for `ParseString(durStr)` and then calling `LimitFirstN(1)`
 func ParseStringShort(input string) (*Durafmt, error) {
 	if input == "0" || input == "-0" {
 		return nil, errors.New("durafmt: missing unit in duration " + input)
@@ -54,7 +62,7 @@ func ParseStringShort(input string) (*Durafmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Durafmt{duration, input, true}, nil
+	return &Durafmt{duration, input, 1}, nil
 }
 
 // String parses d *Durafmt into a human readable duration.
@@ -139,8 +147,11 @@ func (d *Durafmt) String() string {
 
 	// if more than 2 spaces present return the first 2 strings
 	// if short version is requested
-	if d.short {
-		duration = strings.Join(strings.Split(duration, " ")[:2], " ")
+	if d.limitN > 0 {
+		parts := strings.Split(duration, " ")
+		if len(parts) > d.limitN*2 {
+			duration = strings.Join(parts[:d.limitN*2], " ")
+		}
 	}
 
 	return duration
