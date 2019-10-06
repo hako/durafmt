@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	units      = []string{"years", "weeks", "days", "hours", "minutes", "seconds", "milliseconds"}
-	unitsShort = []string{"y", "w", "d", "h", "m", "s", "ms"}
+	units      = []string{"years", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds"}
+	unitsShort = []string{"y", "w", "d", "h", "m", "s", "ms", "µs"}
 )
 
 // Durafmt holds the parsed duration and the original input duration.
@@ -89,8 +89,13 @@ func (d *Durafmt) String() string {
 		(seconds * 1000) - (minutes * 60000) - (hours * 3600000) -
 		(days * 86400000) - (weeks * 604800000) - (years * 31536000000)
 
+	microseconds := int64(d.duration/time.Microsecond) -
+		(milliseconds * 1000) - (seconds * 1000000) - (minutes * 60000000) - (hours * 3600000000) -
+		(days * 86400000000) - (weeks * 604800000000) - (years * 31536000000000)
+
 	// Create a map of the converted duration time.
 	durationMap := map[string]int64{
+		"microseconds": microseconds,
 		"milliseconds": milliseconds,
 		"seconds":      seconds,
 		"minutes":      minutes,
