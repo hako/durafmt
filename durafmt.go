@@ -3,13 +3,16 @@ package durafmt
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
 var (
-	units = []string{"years", "weeks", "days", "hours", "minutes", "seconds", "milliseconds"}
+	units      = []string{"years", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds"}
+	unitsShort = []string{"y", "w", "d", "h", "m", "s", "ms", "µs"}
 )
 
 // Durafmt holds the parsed duration and the original input duration.
@@ -86,8 +89,13 @@ func (d *Durafmt) String() string {
 		(seconds * 1000) - (minutes * 60000) - (hours * 3600000) -
 		(days * 86400000) - (weeks * 604800000) - (years * 31536000000)
 
+	microseconds := int64(d.duration/time.Microsecond) -
+		(milliseconds * 1000) - (seconds * 1000000) - (minutes * 60000000) - (hours * 3600000000) -
+		(days * 86400000000) - (weeks * 604800000000) - (years * 31536000000000)
+
 	// Create a map of the converted duration time.
 	durationMap := map[string]int64{
+		"microseconds": microseconds,
 		"milliseconds": milliseconds,
 		"seconds":      seconds,
 		"minutes":      minutes,
@@ -98,7 +106,8 @@ func (d *Durafmt) String() string {
 	}
 
 	// Construct duration string.
-	for _, u := range units {
+	for i := range units {
+		u := units[i]
 		v := durationMap[u]
 		strval := strconv.FormatInt(v, 10)
 		switch {
@@ -110,23 +119,13 @@ func (d *Durafmt) String() string {
 			duration += strval + " " + strings.TrimRight(u, "s") + " "
 		// omit any value with 0s or 0.
 		case d.duration.String() == "0" || d.duration.String() == "0s":
-			// note: milliseconds and minutes have the same suffix (m)
-			// so we have to check if the units match with the suffix.
-
-			// check for a suffix that is NOT the milliseconds suffix.
-			if strings.HasSuffix(d.input, string(u[0])) && !strings.Contains(d.input, "ms") {
-				// if it happens that the units are milliseconds, skip.
-				if u == "milliseconds" {
-					continue
-				}
-				duration += strval + " " + u
+			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
+			isMatch, err := regexp.MatchString(pattern, d.input)
+			if err != nil {
+				return ""
 			}
-			// process milliseconds here.
-			if u == "milliseconds" {
-				if strings.Contains(d.input, "ms") {
-					duration += strval + " " + u
-					break
-				}
+			if isMatch {
+				duration += strval + " " + u
 			}
 			break
 		// omit any value with 0.

@@ -23,10 +23,12 @@ func TestParse(t *testing.T) {
 		test     time.Duration
 		expected string
 	}{
+		{1 * time.Microsecond, "1 microsecond"},
 		{1 * time.Millisecond, "1 millisecond"},
 		{1 * time.Second, "1 second"},
 		{1 * time.Hour, "1 hour"},
 		{1 * time.Minute, "1 minute"},
+		{2 * time.Microsecond, "2 microseconds"},
 		{2 * time.Millisecond, "2 milliseconds"},
 		{2 * time.Second, "2 seconds"},
 		{2 * time.Minute, "2 minutes"},
@@ -52,6 +54,15 @@ func TestParse(t *testing.T) {
 		{-1 * time.Millisecond, "-1 millisecond"},
 		{-10 * time.Millisecond, "-10 milliseconds"},
 		{-100 * time.Millisecond, "-100 milliseconds"},
+		{-1 * time.Microsecond, "-1 microsecond"},
+		{-10 * time.Microsecond, "-10 microseconds"},
+		{-100 * time.Microsecond, "-100 microseconds"},
+		{-1000 * time.Microsecond, "-1 millisecond"},
+		{-1000000 * time.Microsecond, "-1 second"},
+		{-1001000 * time.Microsecond, "-1 second 1 millisecond"},
+		{-1010000 * time.Microsecond, "-1 second 10 milliseconds"},
+		{-1001001 * time.Microsecond, "-1 second 1 millisecond 1 microsecond"},
+		{-1001002 * time.Microsecond, "-1 second 1 millisecond 2 microseconds"},
 	}
 
 	for _, table := range testTimes {
@@ -69,10 +80,12 @@ func TestParseShort(t *testing.T) {
 		test     time.Duration
 		expected string
 	}{
+		{1 * time.Microsecond, "1 microsecond"},
 		{1 * time.Millisecond, "1 millisecond"},
 		{1 * time.Second, "1 second"},
 		{1 * time.Hour, "1 hour"},
 		{1 * time.Minute, "1 minute"},
+		{2 * time.Microsecond, "2 microseconds"},
 		{2 * time.Millisecond, "2 milliseconds"},
 		{2 * time.Second, "2 seconds"},
 		{2 * time.Minute, "2 minutes"},
@@ -98,6 +111,15 @@ func TestParseShort(t *testing.T) {
 		{-1 * time.Millisecond, "-1 millisecond"},
 		{-10 * time.Millisecond, "-10 milliseconds"},
 		{-100 * time.Millisecond, "-100 milliseconds"},
+		{-1 * time.Microsecond, "-1 microsecond"},
+		{-10 * time.Microsecond, "-10 microseconds"},
+		{-100 * time.Microsecond, "-100 microseconds"},
+		{-1000 * time.Microsecond, "-1 millisecond"},
+		{-1000000 * time.Microsecond, "-1 second"},
+		{-1001000 * time.Microsecond, "-1 second"},
+		{-1010000 * time.Microsecond, "-1 second"},
+		{-1001001 * time.Microsecond, "-1 second"},
+		{-1001002 * time.Microsecond, "-1 second"},
 	}
 
 	for _, table := range testTimes {
@@ -115,6 +137,8 @@ func TestParseString(t *testing.T) {
 		test     string
 		expected string
 	}{
+		{"1µs", "1 microsecond"},
+		{"2µs", "2 microseconds"},
 		{"1ms", "1 millisecond"},
 		{"2ms", "2 milliseconds"},
 		{"1s", "1 second"},
@@ -141,10 +165,13 @@ func TestParseString(t *testing.T) {
 		{"1m2s", "1 minute 2 seconds"},
 		{"3h4m5s", "3 hours 4 minutes 5 seconds"},
 		{"6h7m8s9ms", "6 hours 7 minutes 8 seconds 9 milliseconds"},
+		{"0µs", "0 microseconds"},
 		{"0ms", "0 milliseconds"},
 		{"0s", "0 seconds"},
 		{"0m", "0 minutes"},
 		{"0h", "0 hours"},
+		{"0m1µs", "1 microsecond"},
+		{"0m1ms1µs", "1 millisecond 1 microsecond"},
 		{"0m1ms", "1 millisecond"},
 		{"0m1s", "1 second"},
 		{"0m1m", "1 minute"},
@@ -154,10 +181,12 @@ func TestParseString(t *testing.T) {
 		{"0m2m3h", "3 hours 2 minutes"},
 		{"0m2m34h", "1 day 10 hours 2 minutes"},
 		{"0m56h7m8ms", "2 days 8 hours 7 minutes 8 milliseconds"},
+		{"-1µs", "-1 microsecond"},
 		{"-1ms", "-1 millisecond"},
 		{"-1s", "-1 second"},
 		{"-1m", "-1 minute"},
 		{"-1h", "-1 hour"},
+		{"-2µs", "-2 microseconds"},
 		{"-2ms", "-2 milliseconds"},
 		{"-2s", "-2 seconds"},
 		{"-2m", "-2 minutes"},
@@ -174,6 +203,7 @@ func TestParseString(t *testing.T) {
 		{"-0m2m", "-2 minutes"},
 		{"-0m2m3h", "-3 hours 2 minutes"},
 		{"-0m2m34h", "-1 day 10 hours 2 minutes"},
+		{"-0µs", "-0 microseconds"},
 		{"-0ms", "-0 milliseconds"},
 		{"-0s", "-0 seconds"},
 		{"-0m", "-0 minutes"},
@@ -199,7 +229,9 @@ func TestParseStringShort(t *testing.T) {
 		test     string
 		expected string
 	}{
+		{"1µs", "1 microsecond"},
 		{"1ms", "1 millisecond"},
+		{"2µs", "2 microseconds"},
 		{"2ms", "2 milliseconds"},
 		{"1s", "1 second"},
 		{"2s", "2 seconds"},
@@ -225,10 +257,13 @@ func TestParseStringShort(t *testing.T) {
 		{"1m2s", "1 minute"},
 		{"3h4m5s", "3 hours"},
 		{"6h7m8s9ms", "6 hours"},
+		{"0µs", "0 microseconds"},
 		{"0ms", "0 milliseconds"},
 		{"0s", "0 seconds"},
 		{"0m", "0 minutes"},
 		{"0h", "0 hours"},
+		{"0m1µs", "1 microsecond"},
+		{"0m1ms1µs", "1 millisecond"},
 		{"0m1ms", "1 millisecond"},
 		{"0m1s", "1 second"},
 		{"0m1m", "1 minute"},
@@ -238,10 +273,12 @@ func TestParseStringShort(t *testing.T) {
 		{"0m2m3h", "3 hours"},
 		{"0m2m34h", "1 day"},
 		{"0m56h7m8ms", "2 days"},
+		{"-1µs", "-1 microsecond"},
 		{"-1ms", "-1 millisecond"},
 		{"-1s", "-1 second"},
 		{"-1m", "-1 minute"},
 		{"-1h", "-1 hour"},
+		{"-2µs", "-2 microseconds"},
 		{"-2ms", "-2 milliseconds"},
 		{"-2s", "-2 seconds"},
 		{"-2m", "-2 minutes"},
@@ -258,6 +295,7 @@ func TestParseStringShort(t *testing.T) {
 		{"-0m2m", "-2 minutes"},
 		{"-0m2m3h", "-3 hours"},
 		{"-0m2m34h", "-1 day"},
+		{"-0µs", "-0 microseconds"},
 		{"-0ms", "-0 milliseconds"},
 		{"-0s", "-0 seconds"},
 		{"-0m", "-0 minutes"},
