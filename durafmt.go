@@ -119,7 +119,7 @@ func (d *Durafmt) String() string {
 			duration += strval + " " + strings.TrimRight(u, "s") + " "
 		// omit any value with 0s or 0.
 		case d.duration.String() == "0" || d.duration.String() == "0s":
-			pattern := fmt.Sprintf("0%s$", unitsShort[i])
+			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
 			isMatch, err := regexp.MatchString(pattern, d.input)
 			if err != nil {
 				return ""
