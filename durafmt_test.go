@@ -15,6 +15,11 @@ var (
 		test     time.Duration
 		expected string
 	}
+	testTimesWithLimit []struct {
+		test     time.Duration
+		limitN   int
+		expected string
+	}
 )
 
 // TestParse for durafmt time.Duration conversion.
@@ -67,6 +72,43 @@ func TestParse(t *testing.T) {
 
 	for _, table := range testTimes {
 		result := Parse(table.test).String()
+		if result != table.expected {
+			t.Errorf("Parse(%q).String() = %q. got %q, expected %q",
+				table.test, result, result, table.expected)
+		}
+	}
+}
+
+func TestParseWithLimitN(t *testing.T) {
+	testTimesWithLimit = []struct {
+		test     time.Duration
+		limitN   int
+		expected string
+	}{
+		{1 * time.Millisecond, 0, "1 millisecond"},
+		{8759 * time.Hour, 0, "52 weeks 23 hours"},
+		{17519 * time.Hour, 0, "1 year 52 weeks 23 hours"},
+		{-1 * time.Second, 0, "-1 second"},
+		{-100 * time.Second, 0, "-1 minute 40 seconds"},
+		{1 * time.Millisecond, 1, "1 millisecond"},
+		{8759 * time.Hour, 1, "52 weeks"},
+		{17519 * time.Hour, 1, "1 year"},
+		{-1 * time.Second, 1, "-1 second"},
+		{-100 * time.Second, 1, "-1 minute"},
+		{1 * time.Millisecond, 2, "1 millisecond"},
+		{8759 * time.Hour, 2, "52 weeks 23 hours"},
+		{17519 * time.Hour, 2, "1 year 52 weeks"},
+		{-1 * time.Second, 2, "-1 second"},
+		{-100 * time.Second, 2, "-1 minute 40 seconds"},
+		{1 * time.Millisecond, 3, "1 millisecond"},
+		{8759 * time.Hour, 3, "52 weeks 23 hours"},
+		{17519 * time.Hour, 3, "1 year 52 weeks 23 hours"},
+		{-1 * time.Second, 3, "-1 second"},
+		{-100 * time.Second, 3, "-1 minute 40 seconds"},
+	}
+
+	for _, table := range testTimesWithLimit {
+		result := Parse(table.test).LimitFirstN(table.limitN).String()
 		if result != table.expected {
 			t.Errorf("Parse(%q).String() = %q. got %q, expected %q",
 				table.test, result, result, table.expected)
