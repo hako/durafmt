@@ -135,7 +135,7 @@ func (d *Durafmt) String() string {
 			if isMatch {
 				duration += strval + " " + u
 			}
-			break
+
 		// omit any value with 0.
 		case v == 0:
 			continue
