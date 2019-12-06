@@ -29,7 +29,7 @@ func (d *Durafmt) LimitFirstN(n int) *Durafmt {
 }
 
 // Returns parsed duration as time.Duration
-funct (d *Durafmt) Get() time.Duration {
+func (d *Durafmt) Get() time.Duration {
 	return d.duration
 }
 
