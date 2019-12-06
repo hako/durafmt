@@ -28,6 +28,11 @@ func (d *Durafmt) LimitFirstN(n int) *Durafmt {
 	return d
 }
 
+// Returns parsed duration as time.Duration
+funct (d *Durafmt) Get() time.Duration {
+	return d.duration
+}
+
 // Parse creates a new *Durafmt struct, returns error if input is invalid.
 func Parse(dinput time.Duration) *Durafmt {
 	input := dinput.String()
