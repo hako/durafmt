@@ -58,3 +58,21 @@ func ExampleParseShort() {
 	duration := ParseShort(timeduration).String()
 	fmt.Println(duration) // 2 weeks
 }
+
+func ExampleDurafmt_Format() {
+	timeduration := (354 * time.Hour) + (22 * time.Minute) + (1 * time.Second) + (100*time.Microsecond)
+	duration := Parse(timeduration)
+	// units in portuguese
+	units, err := DefaultUnitsCoder.Decode("ano,semana,dia,hora,minuto,segundo,milissegundo,microssegundo")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(duration.Format(units)) // 2 semanas 18 horas 22 minutos 1 segundo 100 microssegundos
+
+	// custom plural (singular:plural)
+	units, err = DefaultUnitsCoder.Decode("ano,semana:SEMANAS,dia,hora,minuto,segundo,milissegundo,microssegundo")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(duration.Format(units)) // 2 SEMANAS 18 horas 22 minutos 1 segundo 100 microssegundos
+}
