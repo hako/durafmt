@@ -2,11 +2,10 @@ package durafmt
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 )
 
-// DefaultUnitsCoder default unots coder using `":"` as PluralSep and `","` as UnitsSep
+// DefaultUnitsCoder default units coder using `":"` as PluralSep and `","` as UnitsSep
 var DefaultUnitsCoder = UnitsCoder{":", ","}
 
 // Unit the pair of singular and plural units
@@ -65,10 +64,9 @@ func (coder UnitsCoder) Decode(s string) (units Units, err error) {
 		err = fmt.Errorf("bad parts length")
 		return
 	}
-	var ru = reflect.ValueOf(&units).Elem()
-	for i, part := range parts {
+
+	var parse = func(name, part string, u *Unit) bool {
 		ps := strings.Split(part, coder.PluralSep)
-		var u Unit
 		switch len(ps) {
 		case 1:
 			// create plural form with sigular + 's' suffix
@@ -76,10 +74,35 @@ func (coder UnitsCoder) Decode(s string) (units Units, err error) {
 		case 2:
 			u.Singular, u.Plural = ps[0], ps[1]
 		default:
-			err = fmt.Errorf("bad unit pair length")
-			return
+			err = fmt.Errorf("bad unit %q pair length", name)
+			return false
 		}
-		ru.FieldByIndex([]int{i}).Set(reflect.ValueOf(u))
+		return true
+	}
+
+	if !parse("Year", parts[0], &units.Year) {
+		return
+	}
+	if !parse("Week", parts[1], &units.Week) {
+		return
+	}
+	if !parse("Day", parts[2], &units.Day) {
+		return
+	}
+	if !parse("Hour", parts[3], &units.Hour) {
+		return
+	}
+	if !parse("Minute", parts[4], &units.Minute) {
+		return
+	}
+	if !parse("Second", parts[5], &units.Second) {
+		return
+	}
+	if !parse("Millisecond", parts[6], &units.Millisecond) {
+		return
+	}
+	if !parse("Microsecond", parts[7], &units.Microsecond) {
+		return
 	}
 	return
 }
