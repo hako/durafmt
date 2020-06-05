@@ -25,6 +25,16 @@ func ExampleDurafmt_LimitFirstN() {
 	// duration.String() // String representation. "2 weeks 18 hours"
 }
 
+func ExampleDurafmt_LimitToUnit() {
+	duration, err := ParseString("354h22m3.24s")
+	if err != nil {
+		fmt.Println(err)
+	}
+	duration = duration.LimitToUnit("days")
+	fmt.Println(duration) // 14 days 18 hours 22 minutes 3 seconds
+	// duration.String() // String representation. "14 days 18 hours 22 minutes 3 seconds"
+}
+
 func ExampleParseString_sequence() {
 	for hours := 1.0; hours < 12.0; hours++ {
 		hour := fmt.Sprintf("%fh", math.Pow(2, hours))

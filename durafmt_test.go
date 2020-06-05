@@ -15,6 +15,11 @@ var (
 		test     time.Duration
 		expected string
 	}
+	testTimesWithLimitUnit []struct {
+		test     time.Duration
+		limitUnit string
+		expected string
+	}
 	testTimesWithLimit []struct {
 		test     time.Duration
 		limitN   int
@@ -72,6 +77,30 @@ func TestParse(t *testing.T) {
 
 	for _, table := range testTimes {
 		result := Parse(table.test).String()
+		if result != table.expected {
+			t.Errorf("Parse(%q).String() = %q. got %q, expected %q",
+				table.test, result, result, table.expected)
+		}
+	}
+}
+
+func TestParseWithLimitToUnit(t *testing.T) {
+	testTimesWithLimitUnit = []struct {
+		test     time.Duration
+		limitUnit string
+		expected string
+	}{
+		{87593183 * time.Second, "seconds", "87593183 seconds"},
+		{87593183 * time.Second, "minutes", "1459886 minutes 23 seconds"},
+		{87593183 * time.Second, "hours", "24331 hours 26 minutes 23 seconds"},
+		{87593183 * time.Second, "days", "1013 days 19 hours 26 minutes 23 seconds"},
+		{87593183 * time.Second, "weeks", "144 weeks 5 days 19 hours 26 minutes 23 seconds"},
+		{87593183 * time.Second, "years", "2 years 40 weeks 3 days 19 hours 26 minutes 23 seconds"},
+		{87593183 * time.Second, "", "2 years 40 weeks 3 days 19 hours 26 minutes 23 seconds"},
+	}
+
+	for _, table := range testTimesWithLimitUnit {
+		result := Parse(table.test).LimitToUnit(table.limitUnit).String()
 		if result != table.expected {
 			t.Errorf("Parse(%q).String() = %q. got %q, expected %q",
 				table.test, result, result, table.expected)
