@@ -13,7 +13,7 @@ type Unit struct {
 	Singular, Plural string
 }
 
-// Units durantion units
+// Units duration units
 type Units struct {
 	Year, Week, Day, Hour, Minute,
 	Second, Millisecond, Microsecond Unit

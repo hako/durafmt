@@ -290,7 +290,7 @@ func (d *Durafmt) InternationalString() string {
 	}
 
 	// Construct duration string.
-	for i := range units {
+	for i := range units.Units() {
 		u := unitsShort[i]
 		v := durationMap[u]
 		strval := strconv.FormatInt(v, 10)
