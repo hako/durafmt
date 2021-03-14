@@ -16,9 +16,9 @@ var (
 		expected string
 	}
 	testTimesWithLimitUnit []struct {
-		test     time.Duration
+		test      time.Duration
 		limitUnit string
-		expected string
+		expected  string
 	}
 	testTimesWithLimit []struct {
 		test     time.Duration
@@ -86,9 +86,9 @@ func TestParse(t *testing.T) {
 
 func TestParseWithLimitToUnit(t *testing.T) {
 	testTimesWithLimitUnit = []struct {
-		test     time.Duration
+		test      time.Duration
 		limitUnit string
-		expected string
+		expected  string
 	}{
 		{87593183 * time.Second, "seconds", "87593183 seconds"},
 		{87593183 * time.Second, "minutes", "1459886 minutes 23 seconds"},

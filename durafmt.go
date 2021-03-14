@@ -204,7 +204,7 @@ func (d *Durafmt) String() string {
 	return duration
 }
 
-func (d *Durafmt) InternationalString()  string {
+func (d *Durafmt) InternationalString() string {
 	var duration string
 
 	// Check for minus durations.
@@ -277,12 +277,12 @@ func (d *Durafmt) InternationalString()  string {
 	durationMap := map[string]int64{
 		"µs": microseconds,
 		"ms": milliseconds,
-		"s":      seconds,
-		"m":      minutes,
-		"h":        hours,
-		"d":         days,
-		"w":        weeks,
-		"y":        years,
+		"s":  seconds,
+		"m":  minutes,
+		"h":  hours,
+		"d":  days,
+		"w":  weeks,
+		"y":  years,
 	}
 
 	// Construct duration string.
