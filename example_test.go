@@ -60,7 +60,7 @@ func ExampleParseShort() {
 }
 
 func ExampleDurafmt_Format() {
-	timeduration := (354 * time.Hour) + (22 * time.Minute) + (1 * time.Second) + (100*time.Microsecond)
+	timeduration := (354 * time.Hour) + (22 * time.Minute) + (1 * time.Second) + (100 * time.Microsecond)
 	duration := Parse(timeduration)
 	// units in portuguese
 	units, err := DefaultUnitsCoder.Decode("ano,semana,dia,hora,minuto,segundo,milissegundo,microssegundo")

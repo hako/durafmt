@@ -13,10 +13,10 @@ func TestParseUnits(t *testing.T) {
 func TestUnitsCoder_Encode(t *testing.T) {
 	tests := []struct {
 		coder UnitsCoder
-		want   string
+		want  string
 	}{
 		{DefaultUnitsCoder, "year:years,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,millisecond:milliseconds,microsecond:microseconds"},
-		{UnitsCoder{"+","|"}, "year+years|week+weeks|day+days|hour+hours|minute+minutes|second+seconds|millisecond+milliseconds|microsecond+microseconds"},
+		{UnitsCoder{"+", "|"}, "year+years|week+weeks|day+days|hour+hours|minute+minutes|second+seconds|millisecond+milliseconds|microsecond+microseconds"},
 	}
 	for i, tt := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
