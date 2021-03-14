@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-func TestParseUnits(t *testing.T) {
-
-}
-
 func TestUnitsCoder_Encode(t *testing.T) {
 	tests := []struct {
 		coder UnitsCoder

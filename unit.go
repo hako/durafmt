@@ -62,7 +62,7 @@ func (coder UnitsCoder) Decode(s string) (units Units, err error) {
 	parts := strings.Split(s, coder.UnitsSep)
 	if len(parts) != 8 {
 		err = fmt.Errorf("bad parts length")
-		return
+		return units, err
 	}
 
 	var parse = func(name, part string, u *Unit) bool {
@@ -81,28 +81,28 @@ func (coder UnitsCoder) Decode(s string) (units Units, err error) {
 	}
 
 	if !parse("Year", parts[0], &units.Year) {
-		return
+		return units, err
 	}
 	if !parse("Week", parts[1], &units.Week) {
-		return
+		return units, err
 	}
 	if !parse("Day", parts[2], &units.Day) {
-		return
+		return units, err
 	}
 	if !parse("Hour", parts[3], &units.Hour) {
-		return
+		return units, err
 	}
 	if !parse("Minute", parts[4], &units.Minute) {
-		return
+		return units, err
 	}
 	if !parse("Second", parts[5], &units.Second) {
-		return
+		return units, err
 	}
 	if !parse("Millisecond", parts[6], &units.Millisecond) {
-		return
+		return units, err
 	}
 	if !parse("Microsecond", parts[7], &units.Microsecond) {
-		return
+		return units, err
 	}
-	return
+	return units, err
 }
