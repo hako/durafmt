@@ -111,6 +111,39 @@ func main() {
 }
 ```
 
+#### Custom Units
+
+Like `durafmt.Units{}` and `durafmt.Durafmt.Format(units)` to stringify duration with custom units.
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+	
+	"github.com/hako/durafmt"
+)
+
+func main() {
+	timeduration := (354 * time.Hour) + (22 * time.Minute) + (1 * time.Second) + (100*time.Microsecond)
+	duration := durafmt.Parse(timeduration)
+	// units in portuguese
+	units, err := durafmt.DefaultUnitsCoder.Decode("ano,semana,dia,hora,minuto,segundo,milissegundo,microssegundo")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(duration.Format(units)) // 2 semanas 18 horas 22 minutos 1 segundo 100 microssegundos
+    
+    // custom plural (singular:plural)
+    units, err = durafmt.DefaultUnitsCoder.Decode("ano,semana:SEMANAS,dia,hora,minuto,segundo,milissegundo,microssegundo")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(duration.Format(units)) // 2 SEMANAS 18 horas 22 minutos 1 segundo 100 microssegundos
+}
+```
+
 # Contributing
 
 Contributions are welcome! Fork this repo, add your changes and submit a PR.

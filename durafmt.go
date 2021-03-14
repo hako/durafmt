@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	units      = []string{"years", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds"}
+	units, _   = DefaultUnitsCoder.Decode("year,week,day,hour,minute,second,millisecond,microsecond")
 	unitsShort = []string{"y", "w", "d", "h", "m", "s", "ms", "µs"}
 )
 
@@ -79,8 +79,13 @@ func ParseStringShort(input string) (*Durafmt, error) {
 	return &Durafmt{duration, input, 1, ""}, nil
 }
 
-// String parses d *Durafmt into a human readable duration.
+// String parses d *Durafmt into a human readable duration with default units.
 func (d *Durafmt) String() string {
+	return d.Format(units)
+}
+
+// Format parses d *Durafmt into a human readable duration with units.
+func (d *Durafmt) Format(units Units) string {
 	var duration string
 
 	// Check for minus durations.
@@ -150,29 +155,28 @@ func (d *Durafmt) String() string {
 	microseconds = remainingSecondsToConvert
 
 	// Create a map of the converted duration time.
-	durationMap := map[string]int64{
-		"microseconds": microseconds,
-		"milliseconds": milliseconds,
-		"seconds":      seconds,
-		"minutes":      minutes,
-		"hours":        hours,
-		"days":         days,
-		"weeks":        weeks,
-		"years":        years,
+	durationMap := []int64{
+		microseconds,
+		milliseconds,
+		seconds,
+		minutes,
+		hours,
+		days,
+		weeks,
+		years,
 	}
 
 	// Construct duration string.
-	for i := range units {
-		u := units[i]
-		v := durationMap[u]
+	for i, u := range units.Units() {
+		v := durationMap[7-i]
 		strval := strconv.FormatInt(v, 10)
 		switch {
 		// add to the duration string if v > 1.
 		case v > 1:
-			duration += strval + " " + u + " "
+			duration += strval + " " + u.Plural + " "
 		// remove the plural 's', if v is 1.
 		case v == 1:
-			duration += strval + " " + strings.TrimRight(u, "s") + " "
+			duration += strval + " " + u.Singular + " "
 		// omit any value with 0s or 0.
 		case d.duration.String() == "0" || d.duration.String() == "0s":
 			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
@@ -181,7 +185,7 @@ func (d *Durafmt) String() string {
 				return ""
 			}
 			if isMatch {
-				duration += strval + " " + u
+				duration += strval + " " + u.Plural
 			}
 
 		// omit any value with 0.
