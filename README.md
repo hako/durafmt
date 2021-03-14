@@ -34,7 +34,6 @@ package main
 
 import (
 	"fmt"
-	
 	"github.com/hako/durafmt"
 )
 
@@ -57,7 +56,6 @@ package main
 
 import (
 	"fmt"
-	
 	"github.com/hako/durafmt"
 )
 
@@ -79,7 +77,6 @@ package main
 import (
 	"fmt"
 	"time"
-	
 	"github.com/hako/durafmt"
 )
 
@@ -100,7 +97,6 @@ package main
 import (
 	"fmt"
 	"time"
-	
 	"github.com/hako/durafmt"
 )
 
@@ -121,7 +117,6 @@ package main
 import (
 	"fmt"
 	"time"
-	
 	"github.com/hako/durafmt"
 )
 
@@ -134,9 +129,9 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(duration.Format(units)) // 2 semanas 18 horas 22 minutos 1 segundo 100 microssegundos
-    
+
     // custom plural (singular:plural)
-    units, err = durafmt.DefaultUnitsCoder.Decode("ano,semana:SEMANAS,dia,hora,minuto,segundo,milissegundo,microssegundo")
+	units, err = durafmt.DefaultUnitsCoder.Decode("ano,semana:SEMANAS,dia,hora,minuto,segundo,milissegundo,microssegundo")
 	if err != nil {
 		panic(err)
 	}
