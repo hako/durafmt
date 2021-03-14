@@ -1,3 +1,3 @@
 module github.com/hako/durafmt
 
-go 1.16
+go 1.11
