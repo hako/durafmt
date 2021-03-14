@@ -431,12 +431,18 @@ func BenchmarkParse(b *testing.B) {
 
 func BenchmarkParseStringShort(b *testing.B) {
 	for n := 1; n < b.N; n++ {
-		ParseStringShort(fmt.Sprintf("%dh", n))
+		_, err := ParseStringShort(fmt.Sprintf("%dh", n))
+		if err != nil {
+			b.Fatal("Benchmark could not complete.", err)
+		}
 	}
 }
 
 func BenchmarkParseString(b *testing.B) {
 	for n := 1; n < b.N; n++ {
-		ParseString(fmt.Sprintf("%dh", n))
+		_, err := ParseString(fmt.Sprintf("%dh", n))
+		if err != nil {
+			b.Fatal("Benchmark could not complete.", err)
+		}
 	}
 }

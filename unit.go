@@ -39,7 +39,7 @@ type UnitsCoder struct {
 // Examples with `UnitsCoder{PluralSep: ":", UnitsSep = ","}`
 // 	- singular and plural pair units: `"year:wers,week:weeks,day:days,hour:hours,minute:minutes,second:seconds,millisecond:millliseconds,microsecond:microsseconds"`
 func (coder UnitsCoder) Encode(units Units) string {
-	var pairs = make([]string, 8, 8)
+	var pairs = make([]string, 8)
 	for i, u := range units.Units() {
 		pairs[i] = u.Singular + coder.PluralSep + u.Plural
 	}
