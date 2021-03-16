@@ -16,9 +16,9 @@ var (
 		expected string
 	}
 	testTimesWithLimitUnit []struct {
-		test     time.Duration
+		test      time.Duration
 		limitUnit string
-		expected string
+		expected  string
 	}
 	testTimesWithLimit []struct {
 		test     time.Duration
@@ -86,9 +86,9 @@ func TestParse(t *testing.T) {
 
 func TestParseWithLimitToUnit(t *testing.T) {
 	testTimesWithLimitUnit = []struct {
-		test     time.Duration
+		test      time.Duration
 		limitUnit string
-		expected string
+		expected  string
 	}{
 		{87593183 * time.Second, "seconds", "87593183 seconds"},
 		{87593183 * time.Second, "minutes", "1459886 minutes 23 seconds"},
@@ -431,12 +431,18 @@ func BenchmarkParse(b *testing.B) {
 
 func BenchmarkParseStringShort(b *testing.B) {
 	for n := 1; n < b.N; n++ {
-		ParseStringShort(fmt.Sprintf("%dh", n))
+		_, err := ParseStringShort(fmt.Sprintf("%dh", n))
+		if err != nil {
+			b.Fatal("Benchmark could not complete.", err)
+		}
 	}
 }
 
 func BenchmarkParseString(b *testing.B) {
 	for n := 1; n < b.N; n++ {
-		ParseString(fmt.Sprintf("%dh", n))
+		_, err := ParseString(fmt.Sprintf("%dh", n))
+		if err != nil {
+			b.Fatal("Benchmark could not complete.", err)
+		}
 	}
 }
