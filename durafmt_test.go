@@ -421,6 +421,40 @@ func TestInvalidDuration(t *testing.T) {
 	}
 }
 
+// TestInternationalString for valid output when using international strings
+func TestInternationalString(t *testing.T) {
+	var testStrings = []struct {
+		test     *Durafmt
+		expected string
+	}{
+		{Parse(5 * time.Microsecond), "5 µs"},
+		{Parse(1001 * time.Microsecond), "1 ms 1 µs"},
+		{Parse(5 * time.Millisecond), "5 ms"},
+		{Parse(1001 * time.Millisecond), "1 s 1 ms"},
+		{Parse(1 * time.Second), "1 s"},
+		{Parse(5 * time.Second), "5 s"},
+		{Parse(65 * time.Second), "1 m 5 s"},
+		{Parse(1 * time.Minute), "1 m"},
+		{Parse(2 * time.Minute), "2 m"},
+		{Parse(65 * time.Minute), "1 h 5 m"},
+		{Parse(1 * time.Hour), "1 h"},
+		{Parse(2 * time.Hour), "2 h"},
+		{Parse(24 * time.Hour), "1 d" },
+		{Parse(25 * time.Hour), "1 d 1 h" },
+		{Parse(48 * time.Hour), "2 d" },
+		{Parse(168 * time.Hour), "1 w" },
+		{Parse(170 * time.Hour), "1 w 2 h" },
+		{Parse(336 * time.Hour), "2 w" },
+	}
+
+	for _, table := range testStrings {
+		actual := table.test.InternationalString()
+		if actual != table.expected {
+			t.Fatalf("actual duration %s does not match expected duration %s", actual, table.expected)
+		}
+	}
+}
+
 // Benchmarks
 
 func BenchmarkParse(b *testing.B) {
