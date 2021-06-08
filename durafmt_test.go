@@ -439,12 +439,12 @@ func TestInternationalString(t *testing.T) {
 		{Parse(65 * time.Minute), "1 h 5 m"},
 		{Parse(1 * time.Hour), "1 h"},
 		{Parse(2 * time.Hour), "2 h"},
-		{Parse(24 * time.Hour), "1 d" },
-		{Parse(25 * time.Hour), "1 d 1 h" },
-		{Parse(48 * time.Hour), "2 d" },
-		{Parse(168 * time.Hour), "1 w" },
-		{Parse(170 * time.Hour), "1 w 2 h" },
-		{Parse(336 * time.Hour), "2 w" },
+		{Parse(24 * time.Hour), "1 d"},
+		{Parse(25 * time.Hour), "1 d 1 h"},
+		{Parse(48 * time.Hour), "2 d"},
+		{Parse(168 * time.Hour), "1 w"},
+		{Parse(170 * time.Hour), "1 w 2 h"},
+		{Parse(336 * time.Hour), "2 w"},
 	}
 
 	for _, table := range testStrings {
