@@ -5,6 +5,16 @@ import (
 	"strings"
 )
 
+// isASCII reports whether s contains only ASCII characters.
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > 127 {
+			return false
+		}
+	}
+	return true
+}
+
 // DefaultUnitsCoder default units coder using `":"` as PluralSep and `","` as UnitsSep
 var DefaultUnitsCoder = UnitsCoder{":", ","}
 
@@ -69,8 +79,13 @@ func (coder UnitsCoder) Decode(s string) (units Units, err error) {
 		ps := strings.Split(part, coder.PluralSep)
 		switch len(ps) {
 		case 1:
-			// create plural form with sigular + 's' suffix
-			u.Singular, u.Plural = ps[0], ps[0]+"s"
+			// create plural form: append 's' only for ASCII unit names
+			// (non-ASCII scripts like CJK typically do not pluralize)
+			if isASCII(ps[0]) {
+				u.Singular, u.Plural = ps[0], ps[0]+"s"
+			} else {
+				u.Singular, u.Plural = ps[0], ps[0]
+			}
 		case 2:
 			u.Singular, u.Plural = ps[0], ps[1]
 		default:
