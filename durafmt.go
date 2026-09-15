@@ -328,3 +328,118 @@ func (d *Durafmt) InternationalString() string {
 
 	return duration
 }
+
+// CompactString formats using short units with no space between the number and
+// the unit, e.g. "10d 8h 32s".
+func (d *Durafmt) CompactString() string {
+	var duration string
+
+	// Check for minus durations.
+	if string(d.input[0]) == "-" {
+		duration += "-"
+		d.duration = -d.duration
+	}
+
+	var microseconds int64
+	var milliseconds int64
+	var seconds int64
+	var minutes int64
+	var hours int64
+	var days int64
+	var weeks int64
+	var years int64
+	var shouldConvert = false
+
+	remainingSecondsToConvert := int64(d.duration / time.Microsecond)
+
+	// Convert duration.
+	if d.limitUnit == "" {
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "years" || shouldConvert {
+		years = remainingSecondsToConvert / (365 * 24 * 3600 * 1000000)
+		remainingSecondsToConvert -= years * 365 * 24 * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "weeks" || shouldConvert {
+		weeks = remainingSecondsToConvert / (7 * 24 * 3600 * 1000000)
+		remainingSecondsToConvert -= weeks * 7 * 24 * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "days" || shouldConvert {
+		days = remainingSecondsToConvert / (24 * 3600 * 1000000)
+		remainingSecondsToConvert -= days * 24 * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "hours" || shouldConvert {
+		hours = remainingSecondsToConvert / (3600 * 1000000)
+		remainingSecondsToConvert -= hours * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "minutes" || shouldConvert {
+		minutes = remainingSecondsToConvert / (60 * 1000000)
+		remainingSecondsToConvert -= minutes * 60 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "seconds" || shouldConvert {
+		seconds = remainingSecondsToConvert / 1000000
+		remainingSecondsToConvert -= seconds * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "milliseconds" || shouldConvert {
+		milliseconds = remainingSecondsToConvert / 1000
+		remainingSecondsToConvert -= milliseconds * 1000
+	}
+
+	microseconds = remainingSecondsToConvert
+
+	durationMap := map[string]int64{
+		"µs": microseconds,
+		"ms": milliseconds,
+		"s":  seconds,
+		"m":  minutes,
+		"h":  hours,
+		"d":  days,
+		"w":  weeks,
+		"y":  years,
+	}
+
+	for i := range units.Units() {
+		u := unitsShort[i]
+		v := durationMap[u]
+		strval := strconv.FormatInt(v, 10)
+		switch {
+		case v > 0:
+			duration += strval + u + " "
+		case d.duration.String() == "0":
+			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
+			isMatch, err := regexp.MatchString(pattern, d.input)
+			if err != nil {
+				return ""
+			}
+			if isMatch {
+				duration += strval + u
+			}
+		case v == 0:
+			continue
+		}
+	}
+	duration = strings.TrimSpace(duration)
+
+	// Compact parts are "10d", "8h" — one token per unit.
+	if d.limitN > 0 {
+		parts := strings.Split(duration, " ")
+		if len(parts) > d.limitN {
+			duration = strings.Join(parts[:d.limitN], " ")
+		}
+	}
+
+	return duration
+}

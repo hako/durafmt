@@ -62,6 +62,12 @@ func ExampleParse() {
 	fmt.Println(duration) // 2 weeks 18 hours 22 minutes 3 seconds
 }
 
+func ExampleDurafmt_CompactString() {
+	timeduration := (10 * 24 * time.Hour) + (8 * time.Hour) + (32 * time.Second)
+	fmt.Println(Parse(timeduration).LimitToUnit("days").CompactString())
+	// Output: 10d 8h 32s
+}
+
 // Version of durafmt.Parse() that only returns the first part of the duration string.
 func ExampleParseShort() {
 	timeduration := (354 * time.Hour) + (22 * time.Minute) + (3 * time.Second)
