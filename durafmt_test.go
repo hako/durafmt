@@ -455,6 +455,42 @@ func TestInternationalString(t *testing.T) {
 	}
 }
 
+func TestCompactString(t *testing.T) {
+	var testStrings = []struct {
+		test     *Durafmt
+		expected string
+	}{
+		{Parse(5 * time.Microsecond), "5µs"},
+		{Parse(1001 * time.Microsecond), "1ms 1µs"},
+		{Parse(5 * time.Millisecond), "5ms"},
+		{Parse(1001 * time.Millisecond), "1s 1ms"},
+		{Parse(1 * time.Second), "1s"},
+		{Parse(5 * time.Second), "5s"},
+		{Parse(65 * time.Second), "1m 5s"},
+		{Parse(1 * time.Minute), "1m"},
+		{Parse(2 * time.Minute), "2m"},
+		{Parse(65 * time.Minute), "1h 5m"},
+		{Parse(1 * time.Hour), "1h"},
+		{Parse(2 * time.Hour), "2h"},
+		{Parse(24 * time.Hour), "1d"},
+		{Parse(25 * time.Hour), "1d 1h"},
+		{Parse(48 * time.Hour), "2d"},
+		{Parse(168 * time.Hour), "1w"},
+		{Parse(170 * time.Hour), "1w 2h"},
+		{Parse(336 * time.Hour), "2w"},
+		{Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days"), "10d 8h 32s"},
+		{Parse(25 * time.Hour).LimitFirstN(1), "1d"},
+		{Parse(-65 * time.Second), "-1m 5s"},
+	}
+
+	for _, table := range testStrings {
+		actual := table.test.CompactString()
+		if actual != table.expected {
+			t.Fatalf("actual duration %s does not match expected duration %s", actual, table.expected)
+		}
+	}
+}
+
 // Benchmarks
 
 func BenchmarkParse(b *testing.B) {
