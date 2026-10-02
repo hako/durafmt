@@ -88,10 +88,13 @@ func (d *Durafmt) String() string {
 func (d *Durafmt) Format(units Units) string {
 	var duration string
 
-	// Check for minus durations.
+	// Check for minus durations. Flip a copy. Writing the sign back
+	// onto d.duration made the next call negate it again and
+	// return only "-".
+	dur := d.duration
 	if string(d.input[0]) == "-" {
 		duration += "-"
-		d.duration = -d.duration
+		dur = -dur
 	}
 
 	var microseconds int64
@@ -104,7 +107,7 @@ func (d *Durafmt) Format(units Units) string {
 	var years int64
 	var shouldConvert = false
 
-	remainingSecondsToConvert := int64(d.duration / time.Microsecond)
+	remainingSecondsToConvert := int64(dur / time.Microsecond)
 
 	// Convert duration.
 	if d.limitUnit == "" {
@@ -211,10 +214,13 @@ func (d *Durafmt) Format(units Units) string {
 func (d *Durafmt) InternationalString() string {
 	var duration string
 
-	// Check for minus durations.
+	// Check for minus durations. Flip a copy. Writing the sign back
+	// onto d.duration made the next call negate it again and
+	// return only "-".
+	dur := d.duration
 	if string(d.input[0]) == "-" {
 		duration += "-"
-		d.duration = -d.duration
+		dur = -dur
 	}
 
 	var microseconds int64
@@ -227,7 +233,7 @@ func (d *Durafmt) InternationalString() string {
 	var years int64
 	var shouldConvert = false
 
-	remainingSecondsToConvert := int64(d.duration / time.Microsecond)
+	remainingSecondsToConvert := int64(dur / time.Microsecond)
 
 	// Convert duration.
 	if d.limitUnit == "" {

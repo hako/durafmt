@@ -480,3 +480,28 @@ func BenchmarkParseString(b *testing.B) {
 		}
 	}
 }
+
+func TestNegativeFormatKeepsSign(t *testing.T) {
+	d := Parse(-100 * time.Second)
+	first := d.String()
+	second := d.String()
+	if first != "-1 minute 40 seconds" {
+		t.Fatalf("first String() = %q", first)
+	}
+	if second != first {
+		t.Fatalf("second String() = %q, want %q", second, first)
+	}
+	if d.Duration() != -100*time.Second {
+		t.Fatalf("Duration() = %s after String()", d.Duration())
+	}
+
+	d = Parse(-100 * time.Second)
+	first = d.InternationalString()
+	second = d.InternationalString()
+	if first != "-1 m 40 s" {
+		t.Fatalf("first InternationalString() = %q", first)
+	}
+	if second != first {
+		t.Fatalf("second InternationalString() = %q, want %q", second, first)
+	}
+}
