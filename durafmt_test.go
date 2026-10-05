@@ -480,3 +480,28 @@ func BenchmarkParseString(b *testing.B) {
 		}
 	}
 }
+
+func TestNegativeFormatIdempotent(t *testing.T) {
+	d := Parse(-90 * time.Second)
+	first := d.String()
+	second := d.String()
+	if first != second {
+		t.Fatalf("Format mutated receiver: first=%q second=%q", first, second)
+	}
+	if want := "-1 minute 30 seconds"; first != want {
+		t.Fatalf("got %q want %q", first, want)
+	}
+	if d.Duration() != -90*time.Second {
+		t.Fatalf("Duration() mutated: got %v", d.Duration())
+	}
+
+	d2 := Parse(-90 * time.Second)
+	i1 := d2.InternationalString()
+	i2 := d2.InternationalString()
+	if i1 != i2 {
+		t.Fatalf("InternationalString mutated receiver: first=%q second=%q", i1, i2)
+	}
+	if d2.Duration() != -90*time.Second {
+		t.Fatalf("Duration() mutated after InternationalString: got %v", d2.Duration())
+	}
+}
