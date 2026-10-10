@@ -17,10 +17,11 @@ var (
 
 // Durafmt holds the parsed duration and the original input duration.
 type Durafmt struct {
-	duration  time.Duration
-	input     string // Used as reference.
-	limitN    int    // Non-zero to limit only first N elements to output.
-	limitUnit string // Non-empty to limit max unit
+	duration       time.Duration
+	input          string // Used as reference.
+	limitN         int    // Non-zero to limit only first N elements to output.
+	limitAdjacentN int    // Non-zero to limit only first N adjacent elements to output.
+	limitUnit      string // Non-empty to limit max unit
 }
 
 // LimitToUnit sets the output format, you will not have unit bigger than the UNIT specified. UNIT = "" means no restriction.
@@ -35,6 +36,18 @@ func (d *Durafmt) LimitFirstN(n int) *Durafmt {
 	return d
 }
 
+// LimitFirstAdjacentN sets the output format, outputting only first N adjacent elements. n == 0 means no limit.
+func (d *Durafmt) LimitFirstAdjacentN(n int) *Durafmt {
+	d.limitAdjacentN = n
+	return d
+}
+
+// LimitFirstAdjacent sets the output format, outputting only first N adjacent elements.
+// It is an alias for LimitFirstAdjacentN.
+func (d *Durafmt) LimitFirstAdjacent(n int) *Durafmt {
+	return d.LimitFirstAdjacentN(n)
+}
+
 func (d *Durafmt) Duration() time.Duration {
 	return d.duration
 }
@@ -42,14 +55,14 @@ func (d *Durafmt) Duration() time.Duration {
 // Parse creates a new *Durafmt struct, returns error if input is invalid.
 func Parse(dinput time.Duration) *Durafmt {
 	input := dinput.String()
-	return &Durafmt{dinput, input, 0, ""}
+	return &Durafmt{duration: dinput, input: input}
 }
 
 // ParseShort creates a new *Durafmt struct, short form, returns error if input is invalid.
 // It's shortcut for `Parse(dur).LimitFirstN(1)`
 func ParseShort(dinput time.Duration) *Durafmt {
 	input := dinput.String()
-	return &Durafmt{dinput, input, 1, ""}
+	return &Durafmt{duration: dinput, input: input, limitN: 1}
 }
 
 // ParseString creates a new *Durafmt struct from a string.
@@ -62,7 +75,7 @@ func ParseString(input string) (*Durafmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Durafmt{duration, input, 0, ""}, nil
+	return &Durafmt{duration: duration, input: input}, nil
 }
 
 // ParseStringShort creates a new *Durafmt struct from a string, short form
@@ -76,7 +89,7 @@ func ParseStringShort(input string) (*Durafmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Durafmt{duration, input, 1, ""}, nil
+	return &Durafmt{duration: duration, input: input, limitN: 1}, nil
 }
 
 // String parses d *Durafmt into a human readable duration with default units.
@@ -167,16 +180,29 @@ func (d *Durafmt) Format(units Units) string {
 	}
 
 	// Construct duration string.
+	adjacentCount := 0
+	firstNonZeroFound := false
 	for i, u := range units.Units() {
 		v := durationMap[7-i]
+		if d.limitAdjacentN > 0 && firstNonZeroFound && v == 0 {
+			break
+		}
 		strval := strconv.FormatInt(v, 10)
 		switch {
 		// add to the duration string if v > 1.
 		case v > 1:
 			duration += strval + " " + u.Plural + " "
+			if d.limitAdjacentN > 0 {
+				firstNonZeroFound = true
+				adjacentCount++
+			}
 		// remove the plural 's', if v is 1.
 		case v == 1:
 			duration += strval + " " + u.Singular + " "
+			if d.limitAdjacentN > 0 {
+				firstNonZeroFound = true
+				adjacentCount++
+			}
 		// omit any value with 0s or 0.
 		case d.duration.String() == "0" || d.duration.String() == "0s":
 			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
@@ -191,6 +217,9 @@ func (d *Durafmt) Format(units Units) string {
 		// omit any value with 0.
 		case v == 0:
 			continue
+		}
+		if d.limitAdjacentN > 0 && adjacentCount == d.limitAdjacentN {
+			break
 		}
 	}
 	// trim any remaining spaces.
@@ -290,16 +319,25 @@ func (d *Durafmt) InternationalString() string {
 	}
 
 	// Construct duration string.
+	adjacentCount := 0
+	firstNonZeroFound := false
 	for i := range units.Units() {
 		u := unitsShort[i]
 		v := durationMap[u]
+		if d.limitAdjacentN > 0 && firstNonZeroFound && v == 0 {
+			break
+		}
 		strval := strconv.FormatInt(v, 10)
 		switch {
 		// add to the duration string if v > 0.
 		case v > 0:
 			duration += strval + " " + u + " "
+			if d.limitAdjacentN > 0 {
+				firstNonZeroFound = true
+				adjacentCount++
+			}
 		// omit any value with 0.
-		case d.duration.String() == "0":
+		case d.duration.String() == "0" || d.duration.String() == "0s":
 			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
 			isMatch, err := regexp.MatchString(pattern, d.input)
 			if err != nil {
@@ -312,6 +350,9 @@ func (d *Durafmt) InternationalString() string {
 		// omit any value with 0.
 		case v == 0:
 			continue
+		}
+		if d.limitAdjacentN > 0 && adjacentCount == d.limitAdjacentN {
+			break
 		}
 	}
 	// trim any remaining spaces.

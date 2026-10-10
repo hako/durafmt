@@ -107,6 +107,26 @@ func main() {
 }
 ```
 
+#### LimitFirstAdjacentN()
+
+Like `LimitFirstN()`, but limits to sequential adjacent time units starting from the highest non-zero unit, stopping when an intermediate unit is zero or when N units are reached.
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+	"github.com/hako/durafmt"
+)
+
+func main() {
+	timeduration := (2 * time.Hour) + (58 * time.Second)
+	duration := durafmt.Parse(timeduration).LimitFirstAdjacentN(2)
+	fmt.Println(duration) // 2 hours
+}
+```
+
 #### Custom Units
 
 Like `durafmt.Units{}` and `durafmt.Durafmt.Format(units)` to stringify duration with custom units.

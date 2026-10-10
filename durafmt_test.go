@@ -145,6 +145,381 @@ func TestParseWithLimitN(t *testing.T) {
 	}
 }
 
+func TestParseWithLimitFirstAdjacentN(t *testing.T) {
+	testCases := []struct {
+		name     string
+		duration time.Duration
+		limitN   int
+		expected string
+	}{
+		// Happy path: consecutive units
+		{
+			name:     "consecutive units limited to 2",
+			duration: 2*time.Hour + 15*time.Minute,
+			limitN:   2,
+			expected: "2 hours 15 minutes",
+		},
+		{
+			name:     "consecutive units limited to 1",
+			duration: 2*time.Hour + 15*time.Minute,
+			limitN:   1,
+			expected: "2 hours",
+		},
+		{
+			name:     "consecutive units limited to 3",
+			duration: 2*time.Hour + 15*time.Minute + 30*time.Second,
+			limitN:   3,
+			expected: "2 hours 15 minutes 30 seconds",
+		},
+		{
+			name:     "consecutive units limited to 2 with 3 available",
+			duration: 2*time.Hour + 15*time.Minute + 30*time.Second,
+			limitN:   2,
+			expected: "2 hours 15 minutes",
+		},
+		{
+			name:     "consecutive year and week limited to 2",
+			duration: 8760*time.Hour + 2*168*time.Hour,
+			limitN:   2,
+			expected: "1 year 2 weeks",
+		},
+		{
+			name:     "consecutive week and day limited to 2",
+			duration: 168*time.Hour + 24*time.Hour,
+			limitN:   2,
+			expected: "1 week 1 day",
+		},
+		{
+			name:     "consecutive day and hour limited to 2",
+			duration: 24*time.Hour + 2*time.Hour,
+			limitN:   2,
+			expected: "1 day 2 hours",
+		},
+		{
+			name:     "consecutive minute and second limited to 2",
+			duration: 3*time.Minute + 4*time.Second,
+			limitN:   2,
+			expected: "3 minutes 4 seconds",
+		},
+		{
+			name:     "consecutive second and millisecond limited to 2",
+			duration: 5*time.Second + 6*time.Millisecond,
+			limitN:   2,
+			expected: "5 seconds 6 milliseconds",
+		},
+		{
+			name:     "consecutive millisecond and microsecond limited to 2",
+			duration: 7*time.Millisecond + 8*time.Microsecond,
+			limitN:   2,
+			expected: "7 milliseconds 8 microseconds",
+		},
+
+		// Gap path: non-consecutive units
+		{
+			name:     "gap between hours and seconds (issue 33 example)",
+			duration: 2*time.Hour + 58*time.Second,
+			limitN:   2,
+			expected: "2 hours",
+		},
+		{
+			name:     "gap between year and second",
+			duration: 8760*time.Hour + 2*time.Second,
+			limitN:   2,
+			expected: "1 year",
+		},
+		{
+			name:     "gap between week and minute",
+			duration: 168*time.Hour + 5*time.Minute,
+			limitN:   2,
+			expected: "1 week",
+		},
+		{
+			name:     "gap between day and second",
+			duration: 24*time.Hour + 30*time.Second,
+			limitN:   2,
+			expected: "1 day",
+		},
+		{
+			name:     "gap between hour and microsecond",
+			duration: time.Hour + 5*time.Microsecond,
+			limitN:   2,
+			expected: "1 hour",
+		},
+		{
+			name:     "gap between minute and microsecond",
+			duration: time.Minute + 50*time.Microsecond,
+			limitN:   2,
+			expected: "1 minute",
+		},
+		{
+			name:     "gap between second and microsecond",
+			duration: time.Second + 50*time.Microsecond,
+			limitN:   2,
+			expected: "1 second",
+		},
+		{
+			name:     "consecutive prefix then gap, requesting limit beyond gap",
+			duration: 8760*time.Hour + 2*168*time.Hour + 3*24*time.Hour + 5*time.Minute,
+			limitN:   4,
+			expected: "1 year 2 weeks 3 days",
+		},
+		{
+			name:     "consecutive prefix then gap, requesting limit at prefix length",
+			duration: 8760*time.Hour + 2*168*time.Hour + 3*24*time.Hour + 5*time.Minute,
+			limitN:   3,
+			expected: "1 year 2 weeks 3 days",
+		},
+		{
+			name:     "consecutive prefix then gap, requesting large limit",
+			duration: 8760*time.Hour + 2*168*time.Hour + 3*24*time.Hour + 5*time.Minute,
+			limitN:   8,
+			expected: "1 year 2 weeks 3 days",
+		},
+
+		// Single unit
+		{
+			name:     "single microsecond with limit 1",
+			duration: time.Microsecond,
+			limitN:   1,
+			expected: "1 microsecond",
+		},
+		{
+			name:     "single microsecond with limit 2",
+			duration: time.Microsecond,
+			limitN:   2,
+			expected: "1 microsecond",
+		},
+		{
+			name:     "single hour with limit 1",
+			duration: time.Hour,
+			limitN:   1,
+			expected: "1 hour",
+		},
+		{
+			name:     "single hour with limit 2",
+			duration: time.Hour,
+			limitN:   2,
+			expected: "1 hour",
+		},
+
+		// All 8 units populated
+		{
+			name: "all units populated with limit 1",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   1,
+			expected: "1 year",
+		},
+		{
+			name: "all units populated with limit 2",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   2,
+			expected: "1 year 1 week",
+		},
+		{
+			name: "all units populated with limit 3",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   3,
+			expected: "1 year 1 week 1 day",
+		},
+		{
+			name: "all units populated with limit 4",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   4,
+			expected: "1 year 1 week 1 day 1 hour",
+		},
+		{
+			name: "all units populated with limit 5",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   5,
+			expected: "1 year 1 week 1 day 1 hour 1 minute",
+		},
+		{
+			name: "all units populated with limit 6",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   6,
+			expected: "1 year 1 week 1 day 1 hour 1 minute 1 second",
+		},
+		{
+			name: "all units populated with limit 7",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   7,
+			expected: "1 year 1 week 1 day 1 hour 1 minute 1 second 1 millisecond",
+		},
+		{
+			name: "all units populated with limit 8",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   8,
+			expected: "1 year 1 week 1 day 1 hour 1 minute 1 second 1 millisecond 1 microsecond",
+		},
+		{
+			name: "all units populated with limit 10",
+			duration: 8760*time.Hour + 168*time.Hour + 24*time.Hour + time.Hour +
+				time.Minute + time.Second + time.Millisecond + time.Microsecond,
+			limitN:   10,
+			expected: "1 year 1 week 1 day 1 hour 1 minute 1 second 1 millisecond 1 microsecond",
+		},
+
+		// Boundary values of N
+		{
+			name:     "limit 0 means no limit (gapped duration fully output)",
+			duration: 2*time.Hour + 58*time.Second,
+			limitN:   0,
+			expected: "2 hours 58 seconds",
+		},
+		{
+			name:     "negative limit means no limit",
+			duration: 2*time.Hour + 58*time.Second,
+			limitN:   -1,
+			expected: "2 hours 58 seconds",
+		},
+
+		// Negative durations
+		{
+			name:     "negative duration with gap limited to 2",
+			duration: -(2*time.Hour + 58*time.Second),
+			limitN:   2,
+			expected: "-2 hours",
+		},
+		{
+			name:     "negative duration without gap limited to 2",
+			duration: -(2*time.Hour + 15*time.Minute),
+			limitN:   2,
+			expected: "-2 hours 15 minutes",
+		},
+		{
+			name:     "negative duration with 3 consecutive units limited to 2",
+			duration: -(2*time.Hour + 15*time.Minute + 58*time.Second),
+			limitN:   2,
+			expected: "-2 hours 15 minutes",
+		},
+		{
+			name:     "negative duration with 3 consecutive units limited to 3",
+			duration: -(2*time.Hour + 15*time.Minute + 58*time.Second),
+			limitN:   3,
+			expected: "-2 hours 15 minutes 58 seconds",
+		},
+
+		// Zero duration
+		{
+			name:     "zero duration with limit 2",
+			duration: 0,
+			limitN:   2,
+			expected: "0 seconds",
+		},
+		{
+			name:     "zero duration with limit 1",
+			duration: 0,
+			limitN:   1,
+			expected: "0 seconds",
+		},
+		{
+			name:     "zero duration with limit 0",
+			duration: 0,
+			limitN:   0,
+			expected: "0 seconds",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := Parse(tc.duration).LimitFirstAdjacentN(tc.limitN).String()
+			if res != tc.expected {
+				t.Errorf("LimitFirstAdjacentN(%d) = %q, expected %q", tc.limitN, res, tc.expected)
+			}
+			resAlias := Parse(tc.duration).LimitFirstAdjacent(tc.limitN).String()
+			if resAlias != tc.expected {
+				t.Errorf("LimitFirstAdjacent(%d) = %q, expected %q", tc.limitN, resAlias, tc.expected)
+			}
+		})
+	}
+}
+
+func TestParseStringWithLimitFirstAdjacentN(t *testing.T) {
+	testCases := []struct {
+		input    string
+		limitN   int
+		expected string
+	}{
+		{"2h58s", 2, "2 hours"},
+		{"2h15m", 2, "2 hours 15 minutes"},
+		{"2h15m58s", 2, "2 hours 15 minutes"},
+		{"2h15m58s", 3, "2 hours 15 minutes 58 seconds"},
+		{"0s", 2, "0 seconds"},
+		{"-0s", 2, "-0 seconds"},
+		{"0m", 2, "0 minutes"},
+		{"0m1s", 2, "1 second"},
+		{"0m1ms1µs", 1, "1 millisecond"},
+		{"0m1ms1µs", 2, "1 millisecond 1 microsecond"},
+		{"0m56h7m8ms", 2, "2 days 8 hours"},
+		{"0m56h7m8ms", 3, "2 days 8 hours 7 minutes"},
+		{"0m56h7m8ms", 4, "2 days 8 hours 7 minutes"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s_limit_%d", tc.input, tc.limitN), func(t *testing.T) {
+			d, err := ParseString(tc.input)
+			if err != nil {
+				t.Fatalf("ParseString(%q) failed: %v", tc.input, err)
+			}
+			res := d.LimitFirstAdjacentN(tc.limitN).String()
+			if res != tc.expected {
+				t.Errorf("ParseString(%q).LimitFirstAdjacentN(%d) = %q, expected %q",
+					tc.input, tc.limitN, res, tc.expected)
+			}
+		})
+	}
+}
+
+func TestLimitFirstAdjacentNWithLimitToUnit(t *testing.T) {
+	d := 87593183 * time.Second
+	// Total: 2 years 40 weeks 3 days 19 hours 26 minutes 23 seconds
+	res := Parse(d).LimitToUnit("days").LimitFirstAdjacentN(2).String()
+	expected := "1013 days 19 hours"
+	if res != expected {
+		t.Errorf("got %q, expected %q", res, expected)
+	}
+
+	res = Parse(d).LimitToUnit("hours").LimitFirstAdjacentN(2).String()
+	expected = "24331 hours 26 minutes"
+	if res != expected {
+		t.Errorf("got %q, expected %q", res, expected)
+	}
+}
+
+func TestInternationalStringWithLimitFirstAdjacentN(t *testing.T) {
+	testCases := []struct {
+		duration time.Duration
+		limitN   int
+		expected string
+	}{
+		{2*time.Hour + 58*time.Second, 2, "2 h"},
+		{2*time.Hour + 15*time.Minute, 2, "2 h 15 m"},
+		{2*time.Hour + 15*time.Minute + 58*time.Second, 2, "2 h 15 m"},
+		{2*time.Hour + 15*time.Minute + 58*time.Second, 3, "2 h 15 m 58 s"},
+		{-(2*time.Hour + 58*time.Second), 2, "-2 h"},
+		{1001 * time.Microsecond, 1, "1 ms"},
+		{1001 * time.Microsecond, 2, "1 ms 1 µs"},
+		{170 * time.Hour, 2, "1 w"}, // 170h = 1w 0d 2h, so day is 0, stops at 1w!
+		{170 * time.Hour, 0, "1 w 2 h"},
+	}
+
+	for _, tc := range testCases {
+		res := Parse(tc.duration).LimitFirstAdjacentN(tc.limitN).InternationalString()
+		if res != tc.expected {
+			t.Errorf("Parse(%v).LimitFirstAdjacentN(%d).InternationalString() = %q, expected %q",
+				tc.duration, tc.limitN, res, tc.expected)
+		}
+	}
+}
+
 // TestParseShort for durafmt time.Duration conversion, short version.
 func TestParseShort(t *testing.T) {
 	testTimes = []struct {

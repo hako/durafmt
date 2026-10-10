@@ -25,6 +25,16 @@ func ExampleDurafmt_LimitFirstN() {
 	// duration.String() // String representation. "2 weeks 18 hours"
 }
 
+func ExampleDurafmt_LimitFirstAdjacentN() {
+	duration, err := ParseString("2h58s")
+	if err != nil {
+		fmt.Println(err)
+	}
+	duration = duration.LimitFirstAdjacentN(2)
+	fmt.Println(duration) // 2 hours
+	// duration.String() // String representation. "2 hours"
+}
+
 func ExampleDurafmt_LimitToUnit() {
 	duration, err := ParseString("354h22m3.24s")
 	if err != nil {
