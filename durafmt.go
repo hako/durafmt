@@ -299,7 +299,7 @@ func (d *Durafmt) InternationalString() string {
 		case v > 0:
 			duration += strval + " " + u + " "
 		// omit any value with 0.
-		case d.duration.String() == "0":
+		case d.duration == 0:
 			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
 			isMatch, err := regexp.MatchString(pattern, d.input)
 			if err != nil {
