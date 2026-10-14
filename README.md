@@ -139,6 +139,26 @@ func main() {
 }
 ```
 
+#### CompactString()
+
+Short units with no spaces between numbers and units (`10d 8h 32s`).
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+	"github.com/hako/durafmt"
+)
+
+func main() {
+	timeduration := (10 * 24 * time.Hour) + (8 * time.Hour) + (32 * time.Second)
+	fmt.Println(durafmt.Parse(timeduration).LimitToUnit("days").CompactString()) // 10d 8h 32s
+	fmt.Println(durafmt.Parse(timeduration).LimitToUnit("days").CompactNoSpacesString()) // 10d8h32s
+}
+```
+
 # Contributing
 
 Contributions are welcome! Fork this repo, add your changes and submit a PR.

@@ -21,6 +21,7 @@ type Durafmt struct {
 	input     string // Used as reference.
 	limitN    int    // Non-zero to limit only first N elements to output.
 	limitUnit string // Non-empty to limit max unit
+	noSpaces  bool   // Omit spaces between duration elements
 }
 
 // LimitToUnit sets the output format, you will not have unit bigger than the UNIT specified. UNIT = "" means no restriction.
@@ -35,6 +36,12 @@ func (d *Durafmt) LimitFirstN(n int) *Durafmt {
 	return d
 }
 
+// NoSpaces sets the output format to omit spaces between elements for compact formatting.
+func (d *Durafmt) NoSpaces() *Durafmt {
+	d.noSpaces = true
+	return d
+}
+
 func (d *Durafmt) Duration() time.Duration {
 	return d.duration
 }
@@ -42,14 +49,14 @@ func (d *Durafmt) Duration() time.Duration {
 // Parse creates a new *Durafmt struct, returns error if input is invalid.
 func Parse(dinput time.Duration) *Durafmt {
 	input := dinput.String()
-	return &Durafmt{dinput, input, 0, ""}
+	return &Durafmt{dinput, input, 0, "", false}
 }
 
 // ParseShort creates a new *Durafmt struct, short form, returns error if input is invalid.
 // It's shortcut for `Parse(dur).LimitFirstN(1)`
 func ParseShort(dinput time.Duration) *Durafmt {
 	input := dinput.String()
-	return &Durafmt{dinput, input, 1, ""}
+	return &Durafmt{dinput, input, 1, "", false}
 }
 
 // ParseString creates a new *Durafmt struct from a string.
@@ -62,7 +69,7 @@ func ParseString(input string) (*Durafmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Durafmt{duration, input, 0, ""}, nil
+	return &Durafmt{duration, input, 0, "", false}, nil
 }
 
 // ParseStringShort creates a new *Durafmt struct from a string, short form
@@ -76,7 +83,7 @@ func ParseStringShort(input string) (*Durafmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Durafmt{duration, input, 1, ""}, nil
+	return &Durafmt{duration, input, 1, "", false}, nil
 }
 
 // String parses d *Durafmt into a human readable duration with default units.
@@ -327,4 +334,131 @@ func (d *Durafmt) InternationalString() string {
 	}
 
 	return duration
+}
+
+func (d *Durafmt) convert() (bool, [8]int64) {
+	dur := d.duration
+	isNegative := false
+	if len(d.input) > 0 && d.input[0] == '-' {
+		isNegative = true
+		if dur < 0 {
+			dur = -dur
+		}
+	} else if dur < 0 {
+		isNegative = true
+		dur = -dur
+	}
+
+	remainingMicroseconds := int64(dur / time.Microsecond)
+
+	var years, weeks, days, hours, minutes, seconds, milliseconds, microseconds int64
+	shouldConvert := d.limitUnit == ""
+
+	if d.limitUnit == "years" || shouldConvert {
+		years = remainingMicroseconds / (365 * 24 * 3600 * 1000000)
+		remainingMicroseconds -= years * 365 * 24 * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "weeks" || shouldConvert {
+		weeks = remainingMicroseconds / (7 * 24 * 3600 * 1000000)
+		remainingMicroseconds -= weeks * 7 * 24 * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "days" || shouldConvert {
+		days = remainingMicroseconds / (24 * 3600 * 1000000)
+		remainingMicroseconds -= days * 24 * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "hours" || shouldConvert {
+		hours = remainingMicroseconds / (3600 * 1000000)
+		remainingMicroseconds -= hours * 3600 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "minutes" || shouldConvert {
+		minutes = remainingMicroseconds / (60 * 1000000)
+		remainingMicroseconds -= minutes * 60 * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "seconds" || shouldConvert {
+		seconds = remainingMicroseconds / 1000000
+		remainingMicroseconds -= seconds * 1000000
+		shouldConvert = true
+	}
+
+	if d.limitUnit == "milliseconds" || shouldConvert {
+		milliseconds = remainingMicroseconds / 1000
+		remainingMicroseconds -= milliseconds * 1000
+	}
+
+	microseconds = remainingMicroseconds
+
+	return isNegative, [8]int64{
+		years,
+		weeks,
+		days,
+		hours,
+		minutes,
+		seconds,
+		milliseconds,
+		microseconds,
+	}
+}
+
+func (d *Durafmt) formatCompact(sep string) string {
+	isNegative, durationMap := d.convert()
+
+	var parts []string
+	for i, u := range unitsShort {
+		v := durationMap[i]
+		strval := strconv.FormatInt(v, 10)
+		switch {
+		case v > 0:
+			parts = append(parts, strval+u)
+		case d.duration == 0:
+			pattern := fmt.Sprintf("^-?0%s$", u)
+			isMatch, err := regexp.MatchString(pattern, d.input)
+			if err != nil {
+				return ""
+			}
+			if isMatch {
+				parts = append(parts, strval+u)
+			}
+		}
+	}
+
+	if d.limitN > 0 && len(parts) > d.limitN {
+		parts = parts[:d.limitN]
+	}
+
+	result := strings.Join(parts, sep)
+	if isNegative && len(result) > 0 {
+		result = "-" + result
+	}
+	return result
+}
+
+// CompactString parses d *Durafmt into a human readable duration using shorthand units
+// with no spaces between numbers and units (e.g. "10d 8h 32s").
+func (d *Durafmt) CompactString() string {
+	sep := " "
+	if d.noSpaces {
+		sep = ""
+	}
+	return d.formatCompact(sep)
+}
+
+// CompactNoSpacesString parses d *Durafmt into a human readable duration using shorthand units
+// with no spaces between numbers and units and no spaces between elements (e.g. "10d8h32s").
+func (d *Durafmt) CompactNoSpacesString() string {
+	return d.formatCompact("")
+}
+
+// ShorthandString is an alias for CompactString.
+func (d *Durafmt) ShorthandString() string {
+	return d.CompactString()
 }

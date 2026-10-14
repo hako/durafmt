@@ -86,3 +86,17 @@ func ExampleDurafmt_Format() {
 	}
 	fmt.Println(duration.Format(units)) // 2 SEMANAS 18 horas 22 minutos 1 segundo 100 microssegundos
 }
+
+func ExampleDurafmt_CompactString() {
+	timeduration := (10 * 24 * time.Hour) + (8 * time.Hour) + (32 * time.Second)
+	duration := Parse(timeduration).LimitToUnit("days").CompactString()
+	fmt.Println(duration)
+	// Output: 10d 8h 32s
+}
+
+func ExampleDurafmt_CompactNoSpacesString() {
+	timeduration := (10 * 24 * time.Hour) + (8 * time.Hour) + (32 * time.Second)
+	duration := Parse(timeduration).LimitToUnit("days").CompactNoSpacesString()
+	fmt.Println(duration)
+	// Output: 10d8h32s
+}

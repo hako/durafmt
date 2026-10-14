@@ -455,6 +455,144 @@ func TestInternationalString(t *testing.T) {
 	}
 }
 
+// TestCompactString for valid output when using compact strings
+func TestCompactString(t *testing.T) {
+	var testStrings = []struct {
+		test     *Durafmt
+		expected string
+	}{
+		{Parse(5 * time.Microsecond), "5µs"},
+		{Parse(1001 * time.Microsecond), "1ms 1µs"},
+		{Parse(5 * time.Millisecond), "5ms"},
+		{Parse(1001 * time.Millisecond), "1s 1ms"},
+		{Parse(1 * time.Second), "1s"},
+		{Parse(5 * time.Second), "5s"},
+		{Parse(65 * time.Second), "1m 5s"},
+		{Parse(1 * time.Minute), "1m"},
+		{Parse(2 * time.Minute), "2m"},
+		{Parse(65 * time.Minute), "1h 5m"},
+		{Parse(1 * time.Hour), "1h"},
+		{Parse(2 * time.Hour), "2h"},
+		{Parse(24 * time.Hour), "1d"},
+		{Parse(25 * time.Hour), "1d 1h"},
+		{Parse(48 * time.Hour), "2d"},
+		{Parse(168 * time.Hour), "1w"},
+		{Parse(170 * time.Hour), "1w 2h"},
+		{Parse(336 * time.Hour), "2w"},
+		{Parse(8760 * time.Hour), "1y"},
+		{Parse(17520 * time.Hour), "2y"},
+		{Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days"), "10d 8h 32s"},
+		{Parse(25 * time.Hour).LimitFirstN(1), "1d"},
+		{Parse(25 * time.Hour).LimitFirstN(2), "1d 1h"},
+		{ParseShort(25 * time.Hour), "1d"},
+		{Parse(-65 * time.Second), "-1m 5s"},
+		{Parse(-10 * time.Hour), "-10h"},
+		{Parse(0), "0s"},
+	}
+
+	for _, table := range testStrings {
+		actual := table.test.CompactString()
+		if actual != table.expected {
+			t.Fatalf("actual duration %s does not match expected duration %s", actual, table.expected)
+		}
+	}
+
+	zeroStrings := []struct {
+		test     string
+		expected string
+	}{
+		{"0µs", "0µs"},
+		{"0ms", "0ms"},
+		{"0s", "0s"},
+		{"0m", "0m"},
+		{"0h", "0h"},
+		{"-0s", "-0s"},
+	}
+	for _, table := range zeroStrings {
+		d, err := ParseString(table.test)
+		if err != nil {
+			t.Fatalf("ParseString(%q) unexpected error: %v", table.test, err)
+		}
+		actual := d.CompactString()
+		if actual != table.expected {
+			t.Fatalf("actual duration %s does not match expected duration %s", actual, table.expected)
+		}
+	}
+}
+
+// TestCompactNoSpacesString for valid output when using compact strings without spaces
+func TestCompactNoSpacesString(t *testing.T) {
+	var testStrings = []struct {
+		test     *Durafmt
+		expected string
+	}{
+		{Parse(5 * time.Microsecond), "5µs"},
+		{Parse(1001 * time.Microsecond), "1ms1µs"},
+		{Parse(65 * time.Second), "1m5s"},
+		{Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days"), "10d8h32s"},
+		{Parse(25 * time.Hour).LimitFirstN(1), "1d"},
+		{Parse(-65 * time.Second), "-1m5s"},
+		{Parse(0), "0s"},
+	}
+
+	for _, table := range testStrings {
+		actual := table.test.CompactNoSpacesString()
+		if actual != table.expected {
+			t.Fatalf("actual duration %s does not match expected duration %s", actual, table.expected)
+		}
+	}
+}
+
+// TestNoSpacesModifier for fluent chaining with NoSpaces
+func TestNoSpacesModifier(t *testing.T) {
+	d := Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days").NoSpaces()
+	if actual := d.CompactString(); actual != "10d8h32s" {
+		t.Fatalf("actual duration %s does not match expected duration %s", actual, "10d8h32s")
+	}
+	if actual := d.ShorthandString(); actual != "10d8h32s" {
+		t.Fatalf("actual duration %s does not match expected duration %s", actual, "10d8h32s")
+	}
+
+	dNeg := Parse(-65 * time.Second).NoSpaces()
+	if actual := dNeg.CompactString(); actual != "-1m5s" {
+		t.Fatalf("actual duration %s does not match expected duration %s", actual, "-1m5s")
+	}
+}
+
+// TestShorthandString for shorthand alias verification
+func TestShorthandString(t *testing.T) {
+	d := Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days")
+	if actual := d.ShorthandString(); actual != "10d 8h 32s" {
+		t.Fatalf("actual duration %s does not match expected duration %s", actual, "10d 8h 32s")
+	}
+}
+
+// TestCompactIdempotent to verify repeated calls do not mutate Durafmt receiver
+func TestCompactIdempotent(t *testing.T) {
+	origDur := -65 * time.Second
+	d := Parse(origDur)
+
+	first := d.CompactString()
+	second := d.CompactString()
+	if first != "-1m 5s" || second != "-1m 5s" {
+		t.Fatalf("inconsistent CompactString calls: first=%s, second=%s", first, second)
+	}
+
+	if d.Duration() != origDur {
+		t.Fatalf("receiver duration mutated: expected %v, got %v", origDur, d.Duration())
+	}
+
+	noSpacesFirst := d.CompactNoSpacesString()
+	noSpacesSecond := d.CompactNoSpacesString()
+	if noSpacesFirst != "-1m5s" || noSpacesSecond != "-1m5s" {
+		t.Fatalf("inconsistent CompactNoSpacesString calls: first=%s, second=%s", noSpacesFirst, noSpacesSecond)
+	}
+
+	if d.Duration() != origDur {
+		t.Fatalf("receiver duration mutated: expected %v, got %v", origDur, d.Duration())
+	}
+}
+
 // Benchmarks
 
 func BenchmarkParse(b *testing.B) {
@@ -478,5 +616,21 @@ func BenchmarkParseString(b *testing.B) {
 		if err != nil {
 			b.Fatal("Benchmark could not complete.", err)
 		}
+	}
+}
+
+func BenchmarkCompactString(b *testing.B) {
+	d := Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days")
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		_ = d.CompactString()
+	}
+}
+
+func BenchmarkCompactNoSpacesString(b *testing.B) {
+	d := Parse(10*24*time.Hour + 8*time.Hour + 32*time.Second).LimitToUnit("days")
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		_ = d.CompactNoSpacesString()
 	}
 }
