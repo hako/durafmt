@@ -445,6 +445,8 @@ func TestInternationalString(t *testing.T) {
 		{Parse(168 * time.Hour), "1 w"},
 		{Parse(170 * time.Hour), "1 w 2 h"},
 		{Parse(336 * time.Hour), "2 w"},
+		{Parse(0 * time.Second), "0 s"},
+		{Parse(-5 * time.Second), "-5 s"},
 	}
 
 	for _, table := range testStrings {
@@ -452,6 +454,44 @@ func TestInternationalString(t *testing.T) {
 		if actual != table.expected {
 			t.Fatalf("actual duration %s does not match expected duration %s", actual, table.expected)
 		}
+	}
+}
+
+func TestNegativeDurationIdempotent(t *testing.T) {
+	d := Parse(-5 * time.Second)
+	first := d.String()
+	second := d.String()
+	if first != second {
+		t.Fatalf("d.String() mutated internal state: first=%q, second=%q", first, second)
+	}
+	firstIntl := d.InternationalString()
+	secondIntl := d.InternationalString()
+	if firstIntl != secondIntl {
+		t.Fatalf("d.InternationalString() mutated internal state: first=%q, second=%q", firstIntl, secondIntl)
+	}
+	if firstIntl != "-5 s" {
+		t.Fatalf("expected \"-5 s\", got %q", firstIntl)
+	}
+	if d.Duration() != -5*time.Second {
+		t.Fatalf("d.Duration() was mutated from -5s to %v", d.Duration())
+	}
+}
+
+func TestEmptyInputSafety(t *testing.T) {
+	pos := &Durafmt{duration: 5 * time.Second}
+	if pos.String() != "5 seconds" {
+		t.Fatalf("expected \"5 seconds\", got %q", pos.String())
+	}
+	if pos.InternationalString() != "5 s" {
+		t.Fatalf("expected \"5 s\", got %q", pos.InternationalString())
+	}
+
+	neg := &Durafmt{duration: -5 * time.Second}
+	if neg.String() != "-5 seconds" {
+		t.Fatalf("expected \"-5 seconds\", got %q", neg.String())
+	}
+	if neg.InternationalString() != "-5 s" {
+		t.Fatalf("expected \"-5 s\", got %q", neg.InternationalString())
 	}
 }
 

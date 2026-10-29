@@ -88,10 +88,15 @@ func (d *Durafmt) String() string {
 func (d *Durafmt) Format(units Units) string {
 	var duration string
 
+	dur := d.duration
 	// Check for minus durations.
-	if string(d.input[0]) == "-" {
+	if dur < 0 || strings.HasPrefix(d.input, "-") {
 		duration += "-"
-		d.duration = -d.duration
+		if dur == -1<<63 {
+			dur = 1<<63 - 1
+		} else if dur < 0 {
+			dur = -dur
+		}
 	}
 
 	var microseconds int64
@@ -104,7 +109,7 @@ func (d *Durafmt) Format(units Units) string {
 	var years int64
 	var shouldConvert = false
 
-	remainingSecondsToConvert := int64(d.duration / time.Microsecond)
+	remainingSecondsToConvert := int64(dur / time.Microsecond)
 
 	// Convert duration.
 	if d.limitUnit == "" {
@@ -211,10 +216,15 @@ func (d *Durafmt) Format(units Units) string {
 func (d *Durafmt) InternationalString() string {
 	var duration string
 
+	dur := d.duration
 	// Check for minus durations.
-	if string(d.input[0]) == "-" {
+	if dur < 0 || strings.HasPrefix(d.input, "-") {
 		duration += "-"
-		d.duration = -d.duration
+		if dur == -1<<63 {
+			dur = 1<<63 - 1
+		} else if dur < 0 {
+			dur = -dur
+		}
 	}
 
 	var microseconds int64
@@ -227,7 +237,7 @@ func (d *Durafmt) InternationalString() string {
 	var years int64
 	var shouldConvert = false
 
-	remainingSecondsToConvert := int64(d.duration / time.Microsecond)
+	remainingSecondsToConvert := int64(dur / time.Microsecond)
 
 	// Convert duration.
 	if d.limitUnit == "" {
@@ -299,7 +309,7 @@ func (d *Durafmt) InternationalString() string {
 		case v > 0:
 			duration += strval + " " + u + " "
 		// omit any value with 0.
-		case d.duration.String() == "0":
+		case d.duration.String() == "0" || d.duration.String() == "0s":
 			pattern := fmt.Sprintf("^-?0%s$", unitsShort[i])
 			isMatch, err := regexp.MatchString(pattern, d.input)
 			if err != nil {
